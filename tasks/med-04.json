@@ -1,0 +1,15 @@
+{
+  "id": "med-04",
+  "title": "flatten only one level deep but claims deep",
+  "description": "flatten should recursively flatten arbitrarily nested lists, but it only flattens one level because it does not recurse on nested elements.",
+  "files": {
+    "nest.py": "def flatten(items):\n    result = []\n    for x in items:\n        if isinstance(x, list):\n            for y in x:\n                result.append(y)\n        else:\n            result.append(x)\n    return result\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_nest.py": "from nest import flatten\n\n\ndef test_flatten():\n    assert flatten([1, [2, 3], 4]) == [1, 2, 3, 4]\n    assert flatten([1, [2, [3, [4]]]]) == [1, 2, 3, 4]\n    assert flatten([]) == []\n"
+  },
+  "difficulty": 2,
+  "fix_file": "nest.py",
+  "fix": "def flatten(items):\n    result = []\n    for x in items:\n        if isinstance(x, list):\n            result.extend(flatten(x))\n        else:\n            result.append(x)\n    return result\n"
+}

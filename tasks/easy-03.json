@@ -1,0 +1,15 @@
+{
+  "id": "easy-03",
+  "title": "last_element wrong index",
+  "description": "last_element should return the final item of a list, but it returns the second-to-last due to an off-by-one index.",
+  "files": {
+    "listutil.py": "def last_element(items):\n    return items[len(items) - 2]\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_listutil.py": "from listutil import last_element\n\n\ndef test_last():\n    assert last_element([1, 2, 3]) == 3\n    assert last_element(['a', 'b']) == 'b'\n    assert last_element([42]) == 42\n"
+  },
+  "difficulty": 1,
+  "fix_file": "listutil.py",
+  "fix": "def last_element(items):\n    return items[len(items) - 1]\n"
+}

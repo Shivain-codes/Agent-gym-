@@ -1,0 +1,15 @@
+{
+  "id": "easy-09",
+  "title": "average divides by wrong count",
+  "description": "average should divide the sum by the number of items, but it divides by len(items)+1.",
+  "files": {
+    "stats.py": "def average(items):\n    return sum(items) / (len(items) + 1)\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_stats.py": "from stats import average\n\n\ndef test_average():\n    assert average([2, 4, 6]) == 4\n    assert average([10]) == 10\n    assert average([1, 2]) == 1.5\n"
+  },
+  "difficulty": 1,
+  "fix_file": "stats.py",
+  "fix": "def average(items):\n    return sum(items) / len(items)\n"
+}

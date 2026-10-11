@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Env
+.env
+**/.env
+
+# Data (keep the dir, ignore generated trajectories)
+data/*.jsonl
+trajectories/*.jsonl
+
+# Node / dashboard
+node_modules/
+dashboard/dist/
+dashboard/.env
+
+# OS / editor
+.DS_Store

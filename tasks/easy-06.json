@@ -1,0 +1,15 @@
+{
+  "id": "easy-06",
+  "title": "is_positive excludes nothing correctly",
+  "description": "is_positive should be True only for numbers strictly greater than zero, but it uses >= and wrongly treats 0 as positive.",
+  "files": {
+    "sign.py": "def is_positive(n):\n    return n >= 0\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_sign.py": "from sign import is_positive\n\n\ndef test_positive():\n    assert is_positive(1) is True\n    assert is_positive(0) is False\n    assert is_positive(-3) is False\n"
+  },
+  "difficulty": 1,
+  "fix_file": "sign.py",
+  "fix": "def is_positive(n):\n    return n > 0\n"
+}

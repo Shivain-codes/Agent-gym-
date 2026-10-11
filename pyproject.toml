@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentgym"
+version = "0.1.0"
+description = "A training gym for coding agents: broken repos, a Docker sandbox, automatic test scoring, and reusable trajectory datasets."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.8",
+    "httpx>=0.27",
+    "python-dotenv>=1.0",
+    "openai>=1.40",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools]
+packages = ["gym", "agent", "api"]
+
+[tool.pytest.ini_options]
+testpaths = ["gym", "agent", "api"]
+python_files = ["test_*.py"]

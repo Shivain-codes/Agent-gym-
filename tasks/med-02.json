@@ -1,0 +1,15 @@
+{
+  "id": "med-02",
+  "title": "safe_divide missing zero edge case",
+  "description": "safe_divide should return 0 when the denominator is 0, but it does not guard against it and raises ZeroDivisionError.",
+  "files": {
+    "divide.py": "def safe_divide(a, b):\n    return a / b\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_divide.py": "from divide import safe_divide\n\n\ndef test_divide():\n    assert safe_divide(10, 2) == 5\n    assert safe_divide(7, 0) == 0\n    assert safe_divide(0, 5) == 0\n"
+  },
+  "difficulty": 2,
+  "fix_file": "divide.py",
+  "fix": "def safe_divide(a, b):\n    if b == 0:\n        return 0\n    return a / b\n"
+}

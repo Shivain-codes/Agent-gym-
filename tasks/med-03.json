@@ -1,0 +1,15 @@
+{
+  "id": "med-03",
+  "title": "count_vowels misses uppercase",
+  "description": "count_vowels only counts lowercase vowels, missing uppercase ones. Normalize case before counting.",
+  "files": {
+    "text.py": "def count_vowels(s):\n    vowels = 'aeiou'\n    return sum(1 for ch in s if ch in vowels)\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_text.py": "from text import count_vowels\n\n\ndef test_count_vowels():\n    assert count_vowels('hello') == 2\n    assert count_vowels('AEIOU') == 5\n    assert count_vowels('Programming') == 3\n    assert count_vowels('') == 0\n"
+  },
+  "difficulty": 2,
+  "fix_file": "text.py",
+  "fix": "def count_vowels(s):\n    vowels = 'aeiou'\n    return sum(1 for ch in s.lower() if ch in vowels)\n"
+}

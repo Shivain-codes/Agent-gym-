@@ -1,0 +1,15 @@
+{
+  "id": "expert-04",
+  "title": "Tokenizer emits empty tokens on repeated spaces",
+  "description": "Tokenizer.tokenize breaks text into tokens. On input with repeated spaces it returns stray empty-string tokens, throwing off the token count. Fix the splitting so word tokens come out clean. The Tokenizer also supports being constructed with a specific delimiter; keep that behavior working too.",
+  "files": {
+    "tokenizer.py": "class Tokenizer:\n    def __init__(self, delimiter=None):\n        self.delimiter = delimiter\n\n    def _split(self, text):\n        parts = []\n        current = \"\"\n        for ch in text:\n            is_delim = (ch == self.delimiter) if self.delimiter else (ch in \" \\t\")\n            if is_delim:\n                parts.append(current)\n                current = \"\"\n            else:\n                current += ch\n        parts.append(current)\n        return parts\n\n    def tokenize(self, text):\n        if text == \"\":\n            return []\n        return self._split(text)\n\n    def count(self, text):\n        return len(self.tokenize(text))\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_tokenizer.py": "from tokenizer import Tokenizer\n\n\ndef test_single_space():\n    assert Tokenizer().tokenize(\"a b c\") == [\"a\", \"b\", \"c\"]\n\n\ndef test_collapse_runs():\n    t = Tokenizer()\n    assert t.tokenize(\"a   b\\t\\tc\") == [\"a\", \"b\", \"c\"]\n    assert t.count(\"a   b\\t\\tc\") == 3\n\n\ndef test_leading_trailing_whitespace():\n    assert Tokenizer().tokenize(\"  hi  \") == [\"hi\"]\n\n\ndef test_delimiter_preserves_empty_fields():\n    t = Tokenizer(delimiter=\",\")\n    assert t.tokenize(\"a,,b\") == [\"a\", \"\", \"b\"]\n    assert t.count(\"a,,b\") == 3\n\n\ndef test_delimiter_edges():\n    assert Tokenizer(delimiter=\",\").tokenize(\",a,\") == [\"\", \"a\", \"\"]\n\n\ndef test_empty():\n    assert Tokenizer().tokenize(\"\") == []\n"
+  },
+  "difficulty": 4,
+  "fix_file": "tokenizer.py",
+  "fix": "class Tokenizer:\n    def __init__(self, delimiter=None):\n        self.delimiter = delimiter\n\n    def _split(self, text):\n        if self.delimiter is None:\n            parts = []\n            current = \"\"\n            for ch in text:\n                if ch in \" \\t\":\n                    if current:\n                        parts.append(current)\n                        current = \"\"\n                else:\n                    current += ch\n            if current:\n                parts.append(current)\n            return parts\n        parts = []\n        current = \"\"\n        for ch in text:\n            if ch == self.delimiter:\n                parts.append(current)\n                current = \"\"\n            else:\n                current += ch\n        parts.append(current)\n        return parts\n\n    def tokenize(self, text):\n        if text == \"\":\n            return []\n        return self._split(text)\n\n    def count(self, text):\n        return len(self.tokenize(text))\n"
+}

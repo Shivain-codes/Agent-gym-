@@ -1,0 +1,15 @@
+{
+  "id": "med-10",
+  "title": "clamp wrong boundary logic",
+  "description": "clamp(n, lo, hi) should constrain n to the inclusive range [lo, hi], but it returns lo whenever n is above hi, and hi whenever n is below lo, so the bounds are swapped.",
+  "files": {
+    "clamp.py": "def clamp(n, lo, hi):\n    if n < lo:\n        return hi\n    if n > hi:\n        return lo\n    return n\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_clamp.py": "from clamp import clamp\n\n\ndef test_clamp():\n    assert clamp(5, 0, 10) == 5\n    assert clamp(-3, 0, 10) == 0\n    assert clamp(15, 0, 10) == 10\n    assert clamp(0, 0, 10) == 0\n"
+  },
+  "difficulty": 2,
+  "fix_file": "clamp.py",
+  "fix": "def clamp(n, lo, hi):\n    if n < lo:\n        return lo\n    if n > hi:\n        return hi\n    return n\n"
+}

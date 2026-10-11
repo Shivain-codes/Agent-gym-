@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #FFFFFF;
+  --color-panel: #FFFFFF;
+  --color-ink: #0A0A0A;
+  --color-body: #52525B;
+  --color-micro: #71717A;
+  --color-border: #E5E7EB;
+  --color-hairline: #EDEDED;
+  --color-amber: #76B900;
+  --color-accent-ink: #4D7C0F;
+  --color-pass: #16A34A;
+  --color-fail: #DC2626;
+  --color-soft-fill: #F9FAFB;
+  --color-muted-fill: #F3F4F6;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for the Proving Ground aesthetic */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-micro);
+}
+
+/* Telemetry Ticker Animations */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes scanline {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+.animate-marquee {
+  animation: marquee 60s linear infinite;
+  display: flex;
+  width: max-content;
+}
+.animate-scanline {
+  animation: scanline 10s linear infinite;
+}

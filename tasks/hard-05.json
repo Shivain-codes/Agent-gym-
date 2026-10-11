@@ -1,0 +1,15 @@
+{
+  "id": "hard-05",
+  "title": "memoized fibonacci shares cache across inputs incorrectly",
+  "description": "fib uses a module-level memo but writes the result under the wrong key (it caches by the recursion depth counter instead of n), so cached values are returned for the wrong inputs and larger calls get corrupted results. Cache by n.",
+  "files": {
+    "fib.py": "_memo = {}\n\n\ndef fib(n):\n    if n < 2:\n        return n\n    if n in _memo:\n        return _memo[n]\n    result = fib(n - 1) + fib(n - 2)\n    _memo[n - 1] = result\n    return result\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_fib.py": "from fib import fib\n\n\ndef test_fib():\n    assert fib(0) == 0\n    assert fib(1) == 1\n    assert fib(2) == 1\n    assert fib(10) == 55\n    assert fib(15) == 610\n    assert fib(20) == 6765\n"
+  },
+  "difficulty": 3,
+  "fix_file": "fib.py",
+  "fix": "_memo = {}\n\n\ndef fib(n):\n    if n < 2:\n        return n\n    if n in _memo:\n        return _memo[n]\n    result = fib(n - 1) + fib(n - 2)\n    _memo[n] = result\n    return result\n"
+}

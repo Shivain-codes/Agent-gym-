@@ -1,0 +1,15 @@
+{
+  "id": "easy-08",
+  "title": "first_n off-by-one slice",
+  "description": "first_n(items, n) should return the first n items, but the slice uses n-1 and returns one too few.",
+  "files": {
+    "slicing.py": "def first_n(items, n):\n    return items[:n - 1]\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_slicing.py": "from slicing import first_n\n\n\ndef test_first_n():\n    assert first_n([1, 2, 3, 4], 2) == [1, 2]\n    assert first_n([1, 2, 3], 3) == [1, 2, 3]\n    assert first_n([9], 1) == [9]\n"
+  },
+  "difficulty": 1,
+  "fix_file": "slicing.py",
+  "fix": "def first_n(items, n):\n    return items[:n]\n"
+}

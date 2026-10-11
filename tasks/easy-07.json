@@ -1,0 +1,15 @@
+{
+  "id": "easy-07",
+  "title": "double uses addition instead of multiplication",
+  "description": "double(n) should return 2*n, but it adds 2 instead of multiplying by 2.",
+  "files": {
+    "arith.py": "def double(n):\n    return n + 2\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_arith.py": "from arith import double\n\n\ndef test_double():\n    assert double(3) == 6\n    assert double(0) == 0\n    assert double(-4) == -8\n"
+  },
+  "difficulty": 1,
+  "fix_file": "arith.py",
+  "fix": "def double(n):\n    return n * 2\n"
+}

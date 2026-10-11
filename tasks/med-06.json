@@ -1,0 +1,15 @@
+{
+  "id": "med-06",
+  "title": "title_case drops empty words handling",
+  "description": "title_case should capitalize each word and lowercase the rest, but it only uppercases the first letter without lowercasing the remainder, so already-uppercase input stays wrong.",
+  "files": {
+    "casing.py": "def title_case(s):\n    return ' '.join(word[0].upper() + word[1:] for word in s.split())\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_casing.py": "from casing import title_case\n\n\ndef test_title_case():\n    assert title_case('hello world') == 'Hello World'\n    assert title_case('HELLO WORLD') == 'Hello World'\n    assert title_case('pyThon ROCKS') == 'Python Rocks'\n"
+  },
+  "difficulty": 2,
+  "fix_file": "casing.py",
+  "fix": "def title_case(s):\n    return ' '.join(word[0].upper() + word[1:].lower() for word in s.split())\n"
+}

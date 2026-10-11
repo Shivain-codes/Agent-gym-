@@ -1,0 +1,15 @@
+{
+  "id": "hard-04",
+  "title": "quicksort partition drops duplicates",
+  "description": "This quicksort should return a sorted list preserving all elements including duplicates. The bug partitions into strictly-less and strictly-greater buckets and appends only a single pivot, silently dropping other elements equal to the pivot.",
+  "files": {
+    "qsort.py": "def quicksort(arr):\n    if len(arr) <= 1:\n        return list(arr)\n    pivot = arr[len(arr) // 2]\n    less = [x for x in arr if x < pivot]\n    greater = [x for x in arr if x > pivot]\n    return quicksort(less) + [pivot] + quicksort(greater)\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_qsort.py": "from qsort import quicksort\n\n\ndef test_quicksort():\n    assert quicksort([3, 1, 2]) == [1, 2, 3]\n    assert quicksort([5, 3, 5, 1, 3, 5]) == [1, 3, 3, 5, 5, 5]\n    assert quicksort([2, 2, 2]) == [2, 2, 2]\n    assert quicksort([]) == []\n    assert quicksort([1]) == [1]\n"
+  },
+  "difficulty": 3,
+  "fix_file": "qsort.py",
+  "fix": "def quicksort(arr):\n    if len(arr) <= 1:\n        return list(arr)\n    pivot = arr[len(arr) // 2]\n    less = [x for x in arr if x < pivot]\n    equal = [x for x in arr if x == pivot]\n    greater = [x for x in arr if x > pivot]\n    return quicksort(less) + equal + quicksort(greater)\n"
+}

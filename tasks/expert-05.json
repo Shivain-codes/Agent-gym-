@@ -1,0 +1,15 @@
+{
+  "id": "expert-05",
+  "title": "mean of many floats loses precision",
+  "description": "mean(values) computes the arithmetic mean of a list of floats. It returns a value that is slightly off for large inputs with values of very different magnitudes — the result fails an exact-equality precision check. Make it numerically exact.",
+  "files": {
+    "stats_fp.py": "def mean(values):\n    \"\"\"Return the arithmetic mean of a list of floats, numerically exact.\"\"\"\n    total = 0.0\n    for v in values:\n        total += v\n    return total / len(values)\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_stats_fp.py": "import math\n\nfrom stats_fp import mean\n\n\ndef test_simple():\n    assert mean([1.0, 2.0, 3.0]) == 2.0\n\n\ndef test_two():\n    assert mean([0.5, 1.5]) == 1.0\n\n\ndef test_precision_mixed_magnitudes():\n    # Naive left-to-right summation loses low-order bits here; the exact mean\n    # must match math.fsum-based accumulation bit-for-bit.\n    vals = [1e16, 1.0, -1e16, 1.0] * 2500  # 10000 values\n    expected = math.fsum(vals) / len(vals)\n    assert mean(vals) == expected\n\n\ndef test_precision_small_then_large():\n    vals = [0.1] * 1000000 + [1e16, -1e16]\n    expected = math.fsum(vals) / len(vals)\n    assert mean(vals) == expected\n"
+  },
+  "difficulty": 4,
+  "fix_file": "stats_fp.py",
+  "fix": "import math\n\n\ndef mean(values):\n    \"\"\"Return the arithmetic mean of a list of floats, numerically exact.\"\"\"\n    return math.fsum(values) / len(values)\n"
+}

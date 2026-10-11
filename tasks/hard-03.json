@@ -1,0 +1,15 @@
+{
+  "id": "hard-03",
+  "title": "thread-unsafe counter loses increments",
+  "description": "Counter.increment performs a read-modify-write but only holds the lock around part of it: it reads self._value, yields, and writes outside any critical section that covers the read. Under concurrency this loses increments. Guard the entire read-modify-write with the lock.",
+  "files": {
+    "counter.py": "import threading\nimport time\n\n\nclass Counter:\n    def __init__(self):\n        self._value = 0\n        self._lock = threading.Lock()\n\n    def increment(self):\n        current = self._value\n        # Force a scheduler switch between read and write, exposing the race.\n        time.sleep(0)\n        self._value = current + 1\n\n    @property\n    def value(self):\n        return self._value\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_counter.py": "import threading\n\nfrom counter import Counter\n\n\ndef test_concurrent_increments():\n    c = Counter()\n    n_threads = 8\n    per_thread = 2000\n\n    def worker():\n        for _ in range(per_thread):\n            c.increment()\n\n    threads = [threading.Thread(target=worker) for _ in range(n_threads)]\n    for t in threads:\n        t.start()\n    for t in threads:\n        t.join()\n\n    assert c.value == n_threads * per_thread\n"
+  },
+  "difficulty": 3,
+  "fix_file": "counter.py",
+  "fix": "import threading\nimport time\n\n\nclass Counter:\n    def __init__(self):\n        self._value = 0\n        self._lock = threading.Lock()\n\n    def increment(self):\n        with self._lock:\n            current = self._value\n            time.sleep(0)\n            self._value = current + 1\n\n    @property\n    def value(self):\n        return self._value\n"
+}

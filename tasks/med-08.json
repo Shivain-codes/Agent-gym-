@@ -1,0 +1,15 @@
+{
+  "id": "med-08",
+  "title": "find_index returns on first mismatch",
+  "description": "find_index should return the index of the first occurrence of target, or -1 if absent. The buggy version returns -1 as soon as the first element does not match, instead of continuing the search.",
+  "files": {
+    "search.py": "def find_index(items, target):\n    for i, x in enumerate(items):\n        if x == target:\n            return i\n        else:\n            return -1\n    return -1\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_search.py": "from search import find_index\n\n\ndef test_find_index():\n    assert find_index([1, 2, 3], 3) == 2\n    assert find_index([1, 2, 3], 1) == 0\n    assert find_index([1, 2, 3], 9) == -1\n    assert find_index([], 1) == -1\n"
+  },
+  "difficulty": 2,
+  "fix_file": "search.py",
+  "fix": "def find_index(items, target):\n    for i, x in enumerate(items):\n        if x == target:\n            return i\n    return -1\n"
+}

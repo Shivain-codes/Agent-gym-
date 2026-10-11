@@ -1,0 +1,15 @@
+{
+  "id": "med-05",
+  "title": "mutable default argument accumulates",
+  "description": "append_item uses a mutable default list, so items leak across calls. Use None as the default and create a fresh list inside.",
+  "files": {
+    "defaults.py": "def append_item(item, bucket=[]):\n    bucket.append(item)\n    return bucket\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_defaults.py": "from defaults import append_item\n\n\ndef test_no_shared_state():\n    assert append_item(1) == [1]\n    assert append_item(2) == [2]\n    existing = [9]\n    assert append_item(3, existing) == [9, 3]\n"
+  },
+  "difficulty": 2,
+  "fix_file": "defaults.py",
+  "fix": "def append_item(item, bucket=None):\n    if bucket is None:\n        bucket = []\n    bucket.append(item)\n    return bucket\n"
+}

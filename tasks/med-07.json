@@ -1,0 +1,15 @@
+{
+  "id": "med-07",
+  "title": "running_total resets accumulator",
+  "description": "running_total should return a list of cumulative sums, but the accumulator is reset inside the loop so each entry only reflects the current element.",
+  "files": {
+    "cumsum.py": "def running_total(nums):\n    result = []\n    for n in nums:\n        total = 0\n        total += n\n        result.append(total)\n    return result\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_cumsum.py": "from cumsum import running_total\n\n\ndef test_running_total():\n    assert running_total([1, 2, 3]) == [1, 3, 6]\n    assert running_total([5]) == [5]\n    assert running_total([]) == []\n    assert running_total([2, -2, 4]) == [2, 0, 4]\n"
+  },
+  "difficulty": 2,
+  "fix_file": "cumsum.py",
+  "fix": "def running_total(nums):\n    result = []\n    total = 0\n    for n in nums:\n        total += n\n        result.append(total)\n    return result\n"
+}

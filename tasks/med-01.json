@@ -1,0 +1,15 @@
+{
+  "id": "med-01",
+  "title": "fizzbuzz order of checks",
+  "description": "fizzbuzz checks divisibility by 3 and 5 before checking both, so multiples of 15 return 'Fizz' instead of 'FizzBuzz'. Reorder the logic to handle the combined case first.",
+  "files": {
+    "fb.py": "def fizzbuzz(n):\n    if n % 3 == 0:\n        return 'Fizz'\n    if n % 5 == 0:\n        return 'Buzz'\n    if n % 15 == 0:\n        return 'FizzBuzz'\n    return str(n)\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_fb.py": "from fb import fizzbuzz\n\n\ndef test_fizzbuzz():\n    assert fizzbuzz(15) == 'FizzBuzz'\n    assert fizzbuzz(30) == 'FizzBuzz'\n    assert fizzbuzz(3) == 'Fizz'\n    assert fizzbuzz(5) == 'Buzz'\n    assert fizzbuzz(7) == '7'\n"
+  },
+  "difficulty": 2,
+  "fix_file": "fb.py",
+  "fix": "def fizzbuzz(n):\n    if n % 15 == 0:\n        return 'FizzBuzz'\n    if n % 3 == 0:\n        return 'Fizz'\n    if n % 5 == 0:\n        return 'Buzz'\n    return str(n)\n"
+}

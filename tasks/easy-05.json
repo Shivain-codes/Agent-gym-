@@ -1,0 +1,15 @@
+{
+  "id": "easy-05",
+  "title": "countdown off-by-one range",
+  "description": "countdown(n) should produce n, n-1, ..., 1 as a list, but it stops one early and omits 1.",
+  "files": {
+    "seq.py": "def countdown(n):\n    return [i for i in range(n, 1, -1)]\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_seq.py": "from seq import countdown\n\n\ndef test_countdown():\n    assert countdown(5) == [5, 4, 3, 2, 1]\n    assert countdown(1) == [1]\n    assert countdown(3) == [3, 2, 1]\n"
+  },
+  "difficulty": 1,
+  "fix_file": "seq.py",
+  "fix": "def countdown(n):\n    return [i for i in range(n, 0, -1)]\n"
+}

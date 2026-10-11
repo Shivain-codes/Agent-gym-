@@ -1,0 +1,15 @@
+{
+  "id": "easy-04",
+  "title": "max_of_two wrong comparison",
+  "description": "max_of_two returns the larger of two numbers, but the comparison operator is reversed so it returns the smaller.",
+  "files": {
+    "compare.py": "def max_of_two(a, b):\n    if a < b:\n        return a\n    return b\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_compare.py": "from compare import max_of_two\n\n\ndef test_max():\n    assert max_of_two(3, 7) == 7\n    assert max_of_two(10, 2) == 10\n    assert max_of_two(5, 5) == 5\n"
+  },
+  "difficulty": 1,
+  "fix_file": "compare.py",
+  "fix": "def max_of_two(a, b):\n    if a > b:\n        return a\n    return b\n"
+}

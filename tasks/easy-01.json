@@ -1,0 +1,15 @@
+{
+  "id": "easy-01",
+  "title": "sum_range off-by-one",
+  "description": "sum_range(a, b) should return the sum of integers from a to b inclusive, but the final value is being dropped.",
+  "files": {
+    "calc.py": "def sum_range(a, b):\n    total = 0\n    for i in range(a, b):\n        total += i\n    return total\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_calc.py": "from calc import sum_range\n\n\ndef test_inclusive():\n    assert sum_range(1, 5) == 15\n    assert sum_range(0, 0) == 0\n    assert sum_range(3, 3) == 3\n"
+  },
+  "difficulty": 1,
+  "fix_file": "calc.py",
+  "fix": "def sum_range(a, b):\n    total = 0\n    for i in range(a, b + 1):\n        total += i\n    return total\n"
+}

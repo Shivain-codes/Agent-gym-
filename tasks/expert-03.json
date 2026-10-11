@@ -1,0 +1,15 @@
+{
+  "id": "expert-03",
+  "title": "two_sum returns a wrong-order pair and self-pairs",
+  "description": "two_sum(nums, target) must return the EARLIEST valid pair of indices (i, j), i < j, such that nums[i] + nums[j] == target. 'Earliest' means: minimize j first (the pair that completes as early as possible when scanning left to right), and for that j the smallest i. It currently allows pairing an element with itself (i == j). Fix it so the tests pass.",
+  "files": {
+    "twosum.py": "def two_sum(nums, target):\n    \"\"\"Return the earliest (i, j), i < j, with nums[i] + nums[j] == target.\"\"\"\n    for i in range(len(nums)):\n        for j in range(i, len(nums)):\n            if nums[i] + nums[j] == target:\n                return (i, j)\n    return None\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_twosum.py": "import signal\n\nimport pytest\n\nfrom twosum import two_sum\n\n\nclass _Timeout(Exception):\n    pass\n\n\ndef _with_timeout(fn, seconds):\n    def handler(signum, frame):\n        raise _Timeout()\n    old = signal.signal(signal.SIGALRM, handler)\n    signal.setitimer(signal.ITIMER_REAL, seconds)\n    try:\n        return fn()\n    finally:\n        signal.setitimer(signal.ITIMER_REAL, 0)\n        signal.signal(signal.SIGALRM, old)\n\n\ndef test_basic():\n    assert two_sum([2, 7, 11, 15], 9) == (0, 1)\n\n\ndef test_no_self_pair():\n    assert two_sum([3, 3], 6) == (0, 1)\n\n\ndef test_single_no_pair():\n    assert two_sum([5], 10) is None\n\n\ndef test_earliest_by_j_then_i():\n    # target 10. Pairs: (0,3)=1+9, (1,2)=5+5, (2,4)=5+5... scanning for the\n    # smallest completing index j: j=2 (nums[1]+nums[2]=5+5=10) completes before\n    # j=3. So the earliest pair is (1, 2), NOT (0, 3).\n    nums = [1, 5, 5, 9, 5]\n    assert two_sum(nums, 10) == (1, 2)\n\n\ndef test_duplicates_smallest_i_for_that_j():\n    # target 8, nums has multiple 4s. Earliest completing j is index 2\n    # (nums[0]+nums[2]=4+4). i must be the smallest index that completes it.\n    nums = [4, 7, 4, 4]\n    assert two_sum(nums, 8) == (0, 2)\n\n\ndef test_no_match():\n    assert two_sum([1, 2, 3], 100) is None\n\n\ndef test_performance():\n    n = 200_000\n    nums = list(range(n))\n    target = (n - 1) + (n - 2)\n    try:\n        result = _with_timeout(lambda: two_sum(nums, target), 3.0)\n    except _Timeout:\n        pytest.fail(\"too slow: exceeded 3s (likely O(n^2))\")\n    assert result == (n - 2, n - 1), f\"wrong answer: {result}\"\n"
+  },
+  "difficulty": 4,
+  "fix_file": "twosum.py",
+  "fix": "def two_sum(nums, target):\n    \"\"\"Return the earliest (i, j), i < j, with nums[i] + nums[j] == target.\n\n    Scanning left to right, j is the first index that completes a pair; for\n    that j, seen[complement] already holds the smallest earlier index.\n    \"\"\"\n    seen = {}\n    for j, x in enumerate(nums):\n        complement = target - x\n        if complement in seen:\n            return (seen[complement], j)\n        if x not in seen:\n            seen[x] = j\n    return None\n"
+}

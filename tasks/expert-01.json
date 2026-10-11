@@ -1,0 +1,15 @@
+{
+  "id": "expert-01",
+  "title": "format_table shows wrong column widths",
+  "description": "format_table renders a list of rows as a padded text table. The output has wrong column widths — columns are too narrow and data is truncated. The error shows up in format_table's output, but the formatting logic itself is correct; investigate what it depends on.",
+  "files": {
+    "table.py": "def column_widths(rows):\n    \"\"\"Return the max width of each column across all rows.\"\"\"\n    if not rows:\n        return []\n    n_cols = len(rows[0])\n    widths = [0] * n_cols\n    for row in rows:\n        for i, cell in enumerate(row):\n            widths[i] = min(widths[i], len(str(cell)))\n    return widths\n\n\ndef format_table(rows):\n    \"\"\"Format rows as a fixed-width text table.\"\"\"\n    if not rows:\n        return \"\"\n    widths = column_widths(rows)\n    lines = []\n    for row in rows:\n        parts = [str(cell).ljust(w) for cell, w in zip(row, widths)]\n        lines.append(\" | \".join(parts))\n    return \"\\n\".join(lines)\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_table.py": "from table import column_widths, format_table\n\n\ndef test_column_widths():\n    rows = [[\"name\", \"age\"], [\"Alice\", \"30\"], [\"Bob\", \"7\"]]\n    assert column_widths(rows) == [5, 3]\n\n\ndef test_column_widths_empty():\n    assert column_widths([]) == []\n\n\ndef test_format_table():\n    rows = [[\"name\", \"age\"], [\"Alice\", \"30\"], [\"Bob\", \"7\"]]\n    result = format_table(rows)\n    lines = result.split(\"\\n\")\n    assert len(lines) == 3\n    assert \"Alice\" in lines[1]\n    assert lines[0].startswith(\"name \")\n    # Columns must be padded to the max width.\n    assert lines[2].startswith(\"Bob  \")\n\n\ndef test_format_single_column():\n    rows = [[\"hello\"], [\"hi\"]]\n    result = format_table(rows)\n    assert result == \"hello\\nhi   \"\n"
+  },
+  "difficulty": 4,
+  "fix_file": "table.py",
+  "fix": "def column_widths(rows):\n    \"\"\"Return the max width of each column across all rows.\"\"\"\n    if not rows:\n        return []\n    n_cols = len(rows[0])\n    widths = [0] * n_cols\n    for row in rows:\n        for i, cell in enumerate(row):\n            widths[i] = max(widths[i], len(str(cell)))\n    return widths\n\n\ndef format_table(rows):\n    \"\"\"Format rows as a fixed-width text table.\"\"\"\n    if not rows:\n        return \"\"\n    widths = column_widths(rows)\n    lines = []\n    for row in rows:\n        parts = [str(cell).ljust(w) for cell, w in zip(row, widths)]\n        lines.append(\" | \".join(parts))\n    return \"\\n\".join(lines)\n"
+}

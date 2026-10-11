@@ -1,0 +1,15 @@
+{
+  "id": "easy-10",
+  "title": "contains uses wrong boolean operator",
+  "description": "within(n, lo, hi) should be True only when lo <= n <= hi, but it uses 'or' instead of 'and' so almost everything passes.",
+  "files": {
+    "ranges.py": "def within(n, lo, hi):\n    return n >= lo or n <= hi\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_ranges.py": "from ranges import within\n\n\ndef test_within():\n    assert within(5, 1, 10) is True\n    assert within(0, 1, 10) is False\n    assert within(11, 1, 10) is False\n    assert within(1, 1, 10) is True\n"
+  },
+  "difficulty": 1,
+  "fix_file": "ranges.py",
+  "fix": "def within(n, lo, hi):\n    return n >= lo and n <= hi\n"
+}

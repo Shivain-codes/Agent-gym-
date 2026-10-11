@@ -1,0 +1,15 @@
+{
+  "id": "med-09",
+  "title": "merge_dicts mutates first argument",
+  "description": "merge_dicts should return a new dict combining both inputs without mutating either, but it updates the first argument in place, corrupting the caller's data.",
+  "files": {
+    "merge.py": "def merge_dicts(a, b):\n    a.update(b)\n    return a\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_merge.py": "from merge import merge_dicts\n\n\ndef test_merge():\n    a = {'x': 1}\n    b = {'y': 2}\n    merged = merge_dicts(a, b)\n    assert merged == {'x': 1, 'y': 2}\n    assert a == {'x': 1}\n    assert b == {'y': 2}\n"
+  },
+  "difficulty": 2,
+  "fix_file": "merge.py",
+  "fix": "def merge_dicts(a, b):\n    result = dict(a)\n    result.update(b)\n    return result\n"
+}

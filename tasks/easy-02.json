@@ -1,0 +1,15 @@
+{
+  "id": "easy-02",
+  "title": "is_even wrong operator",
+  "description": "is_even should return True for even numbers, but it uses the wrong comparison against the modulo result.",
+  "files": {
+    "nums.py": "def is_even(n):\n    return n % 2 == 1\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_nums.py": "from nums import is_even\n\n\ndef test_even():\n    assert is_even(2) is True\n    assert is_even(0) is True\n    assert is_even(3) is False\n    assert is_even(-4) is True\n"
+  },
+  "difficulty": 1,
+  "fix_file": "nums.py",
+  "fix": "def is_even(n):\n    return n % 2 == 0\n"
+}

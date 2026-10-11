@@ -1,0 +1,15 @@
+{
+  "id": "expert-02",
+  "title": "parse_config leaks comment lines as keys",
+  "description": "parse_config reads a key=value config file (one pair per line) into a dict. Comment lines are being included as config entries when they shouldn't be. Make the parser ignore comments. The existing values must keep working exactly as-is.",
+  "files": {
+    "config.py": "def parse_config(text):\n    \"\"\"Parse a key=value config into a dict.\n\n    One pair per line, split on the first '='. Comment lines are ignored.\n    Blank lines are ignored.\n    \"\"\"\n    result = {}\n    for line in text.splitlines():\n        line = line.strip()\n        if not line:\n            continue\n        if '=' in line:\n            key, _, value = line.partition('=')\n            result[key.strip()] = value.strip()\n    return result\n"
+  },
+  "test_command": "pytest -q",
+  "hidden_tests": {
+    "test_config.py": "from config import parse_config\n\n\ndef test_basic():\n    assert parse_config(\"host=localhost\\nport=8080\") == {\"host\": \"localhost\", \"port\": \"8080\"}\n\n\ndef test_comments_with_equals_skipped():\n    text = \"# db_url=postgres://h/db\\nhost=localhost\\n# timeout=30\\nport=5432\"\n    assert parse_config(text) == {\"host\": \"localhost\", \"port\": \"5432\"}\n\n\ndef test_hash_inside_value_preserved():\n    text = \"color=#ff0000\\ntag=v1.0#beta\\nfrag=page#section\"\n    cfg = parse_config(text)\n    assert cfg[\"color\"] == \"#ff0000\"\n    assert cfg[\"tag\"] == \"v1.0#beta\"\n    assert cfg[\"frag\"] == \"page#section\"\n\n\ndef test_indented_comment_skipped():\n    assert parse_config(\"   # note=x\\nname=test\") == {\"name\": \"test\"}\n\n\ndef test_blank_lines():\n    assert parse_config(\"\\n\\nkey=val\\n\\n\") == {\"key\": \"val\"}\n"
+  },
+  "difficulty": 4,
+  "fix_file": "config.py",
+  "fix": "def parse_config(text):\n    \"\"\"Parse a key=value config into a dict.\n\n    One pair per line, split on the first '='. Comment lines are ignored.\n    Blank lines are ignored.\n    \"\"\"\n    result = {}\n    for line in text.splitlines():\n        line = line.strip()\n        if not line:\n            continue\n        if line.startswith('#'):\n            continue\n        if '=' in line:\n            key, _, value = line.partition('=')\n            result[key.strip()] = value.strip()\n    return result\n"
+}
