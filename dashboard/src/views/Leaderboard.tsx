@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import {
   api,
   type EpisodeSummary,
@@ -15,7 +15,7 @@ const blackBoxSpring = {
   type: "spring",
   stiffness: 260,
   damping: 26,
-};
+} as const
 
 export default function Leaderboard() {
   const [rows, setRows] = useState<LeaderboardRow[] | null>(null);
@@ -56,17 +56,65 @@ export default function Leaderboard() {
       className="space-y-12 px-6 py-12"
     >
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-4xl font-display font-bold tracking-tighter text-[var(--color-ink)]">Leaderboard</h1>
-        <p className="mt-2 text-sm text-[var(--color-body)] max-w-2xl font-mono uppercase tracking-widest">
-          Nemotron Nano vs Super vs Ultra // Performance Metrics
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
+          SYS_LOG // MODEL_RANKINGS
+        </p>
+        <h1 className="mt-3 text-5xl font-display font-bold tracking-tighter text-[var(--color-ink)]">Leaderboard</h1>
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--color-body)]">
+          Every model passes every task. The gym separates them on efficiency —
+          and on code quality, where the judge has its own opinion.
         </p>
       </div>
 
       <ModelCards rows={rows} />
+      <Insight rows={rows} />
       <Charts rows={rows} />
       <Matrix matrix={matrix} />
       <RecentEpisodes episodes={episodes} />
     </motion.section>
+  );
+}
+
+function Insight({ rows }: { rows: LeaderboardRow[] }) {
+  const insight = useMemo(() => {
+    if (rows.length < 2) return null;
+    const fastest = [...rows].sort((a, b) => a.avg_steps - b.avg_steps)[0];
+    const bestJudge = [...rows].sort(
+      (a, b) => (b.avg_judge_score ?? 0) - (a.avg_judge_score ?? 0)
+    )[0];
+    if (fastest.model === bestJudge.model) return null;
+    return { fastest, bestJudge };
+  }, [rows]);
+
+  if (!insight) return null;
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...blackBoxSpring, delay: 0.15 }}
+      className="mx-auto max-w-5xl"
+    >
+      <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-ink)] p-8 md:p-10">
+        <div
+          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full opacity-20"
+          style={{ background: "radial-gradient(circle, #76B900, transparent 70%)" }}
+        />
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
+          The takeaway
+        </p>
+        <p className="mt-3 font-display text-3xl font-bold tracking-tight text-white md:text-4xl">
+          {cap(insight.fastest.model)} is fastest.{" "}
+          <span className="text-zinc-400">The judge disagrees.</span>
+        </p>
+        <p className="mt-3 max-w-2xl font-mono text-xs leading-relaxed text-zinc-400">
+          {cap(insight.fastest.model)} averages {fmt(insight.fastest.avg_steps)} steps per task —
+          but {cap(insight.bestJudge.model)} scores {fmt(insight.bestJudge.avg_judge_score)}/10
+          on code quality. Speed and quality don't move together.
+        </p>
+      </div>
+    </motion.div>
   );
 }
 

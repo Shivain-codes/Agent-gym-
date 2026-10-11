@@ -13,6 +13,7 @@ venv/
 # Data (keep the dir, ignore generated trajectories)
 data/*.jsonl
 trajectories/*.jsonl
+trajectories/exports/
 
 # Node / dashboard
 node_modules/

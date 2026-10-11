@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { api, type EpisodeOut, type EpisodeSummary, type StepEvent } from "../api";
 import { diffLines, diffStats, type DiffLine } from "../lib/diff";
 import { actionColor, actionLabel } from "../lib/ui";
@@ -38,9 +38,13 @@ function EpisodePicker() {
       className="px-6 py-12"
     >
       <div className="mb-12">
-        <h1 className="text-4xl font-display font-bold tracking-tighter text-[var(--color-ink)]">Episode Replay</h1>
-        <p className="mt-2 text-sm text-[var(--color-soft-ink)]">
-          Step through an agent trajectory: action, code diff, and sandbox output.
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
+          SYS_LOG // TRAJECTORY_ARCHIVE
+        </p>
+        <h1 className="mt-3 text-5xl font-display font-bold tracking-tighter text-[var(--color-ink)]">Episode Replay</h1>
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--color-body)]">
+          Step through an agent trajectory: every action, code diff, and sandbox
+          output — the flight recorder for AI coders.
         </p>
       </div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { api, type TaskOut, type MatrixCell } from "../api";
 import { difficultyClass } from "../lib/ui";
 import { cn } from "../lib/utils";
@@ -10,7 +10,7 @@ const blackBoxSpring = {
   type: "spring",
   stiffness: 260,
   damping: 26,
-};
+} as const
 
 const ORDER = ["easy", "medium", "hard", "expert"];
 
@@ -59,11 +59,15 @@ export default function Tasks() {
       transition={blackBoxSpring}
       className="px-6 py-12"
     >
-      <div className="flex items-end justify-between mb-12">
+      <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
         <div className="max-w-2xl">
-          <h1 className="text-4xl font-display font-bold tracking-tighter text-[var(--color-ink)]">Tasks</h1>
-          <p className="mt-2 text-sm text-[var(--color-body)] font-mono uppercase tracking-widest">
-            {tasks.length} broken-repo challenges // agent scoring set
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
+            SYS_LOG // SCORING_SET
+          </p>
+          <h1 className="mt-3 text-5xl font-display font-bold tracking-tighter text-[var(--color-ink)]">Tasks</h1>
+          <p className="mt-3 text-base leading-relaxed text-[var(--color-body)]">
+            {tasks.length} broken-repo challenges. Each one ships with a hidden bug,
+            a test suite, and a rubric — the raw material the gym scores.
           </p>
         </div>
         <div className="flex gap-2 text-xs">

@@ -2,13 +2,14 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { api } from '../../api';
 import { MiniReplay } from './MiniReplay';
+import { TelemetryTicker } from './TelemetryTicker';
 import { Trophy, FlaskConical } from 'lucide-react';
 
 const blackBoxSpring = {
   type: 'spring',
   stiffness: 260,
   damping: 26,
-};
+} as const
 
 // Telemetry Rain Canvas Component
 interface TelemetryRainProps {
@@ -28,21 +29,14 @@ const TelemetryRain: React.FC<TelemetryRainProps> = ({ className = '' }) => {
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
-  const draw = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
+  // Size the canvas backing store only on mount/resize — never per frame.
+  // (Resetting canvas.width every rAF reallocates the bitmap and can tear.)
+  const drawFrame = useCallback((ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
     const dpr = window.devicePixelRatio || 1;
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
 
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    ctx.scale(dpr, dpr);
-
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
 
     // Draw telemetry dashes
@@ -51,21 +45,22 @@ const TelemetryRain: React.FC<TelemetryRainProps> = ({ className = '' }) => {
     const now = prefersReducedMotion ? 0 : Date.now() * 0.00015; // Very slow drift
 
     for (let i = 0; i < dashCount; i++) {
-      // Deterministic pseudo-random based on index
-      const seed = i * 12345 + 67890;
-      const seededRandom = (s: number) => {
-        s = (s * 16807) % 2147483647;
-        return (s - 1) / 2147483646;
+      // Deterministic hash-based pseudo-random (decorrelated across
+      // consecutive i — a naive LCG step marches in lockstep and draws
+      // diagonal streaks instead of scattered rain).
+      const rand = (s: number) => {
+        const x = Math.sin(s * 127.1 + 311.7) * 43758.5453;
+        return x - Math.floor(x);
       };
 
-      // Position - denser in right third
-      const randX = seededRandom(seed);
-      const randY = seededRandom(seed + 1);
-      const randH = seededRandom(seed + 2);
-      const randColor = seededRandom(seed + 3);
+      // Position - denser in the right third (empty space beside the headline)
+      const randX = rand(i * 4);
+      const randY = rand(i * 4 + 1);
+      const randH = rand(i * 4 + 2);
+      const randColor = rand(i * 4 + 3);
 
-      // Bias toward right third
-      const xBias = randX < 0.6 ? randX * 0.5 : 0.5 + (randX - 0.6) * 1.25;
+      // Bias toward right third: 60% of dashes land in x ∈ [0.67, 1.0]
+      const xBias = randX < 0.6 ? 0.67 + randX * 0.55 : (randX - 0.6) * 1.675;
       const x = xBias * width;
 
       // Vertical position with slow drift
@@ -77,9 +72,9 @@ const TelemetryRain: React.FC<TelemetryRainProps> = ({ className = '' }) => {
       // 2px wide
       const w = 2;
 
-      // Color: ~8% in #76B900 at 40% opacity, rest #E4E4E7
+      // Color: ~8% in #76B900 at 50% opacity, rest zinc-300
       const isAccent = randColor < 0.08;
-      ctx.fillStyle = isAccent ? 'rgba(118, 185, 0, 0.4)' : 'rgba(228, 228, 231, 0.6)';
+      ctx.fillStyle = isAccent ? 'rgba(118, 185, 0, 0.5)' : 'rgba(212, 212, 216, 0.85)';
       ctx.fillRect(x, y, w, h);
     }
   }, [prefersReducedMotion]);
@@ -87,14 +82,21 @@ const TelemetryRain: React.FC<TelemetryRainProps> = ({ className = '' }) => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    const resize = () => draw();
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(canvas.clientWidth * dpr));
+      canvas.height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
+      drawFrame(ctx, canvas);
+    };
     window.addEventListener('resize', resize);
-    draw();
+    resize();
 
     if (!prefersReducedMotion) {
       const animate = () => {
-        draw();
+        drawFrame(ctx, canvas);
         animationRef.current = requestAnimationFrame(animate);
       };
       animationRef.current = requestAnimationFrame(animate);
@@ -106,12 +108,14 @@ const TelemetryRain: React.FC<TelemetryRainProps> = ({ className = '' }) => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [draw, prefersReducedMotion]);
+  }, [drawFrame, prefersReducedMotion]);
 
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute inset-0 pointer-events-none ${className}`}
+      // NOTE: canvas is a replaced element — inset-0 alone does NOT stretch it
+      // (it keeps its 300x150 intrinsic size). h-full w-full is required.
+      className={`absolute inset-0 h-full w-full pointer-events-none ${className}`}
       aria-hidden="true"
     />
   );
@@ -323,9 +327,9 @@ export const Hero: React.FC = () => {
               <div className="flex flex-col">
                 <span className="text-[9px] font-mono uppercase text-[var(--color-micro)]">Performance</span>
                 <span className="text-sm font-display font-bold text-[var(--color-ink)]">
-                  Judge: {stats?.judge ?? (
-                    <span className="h-4 w-24 bg-[var(--color-muted-fill)] animate-pulse rounded-inline" />
-                  )} / 10
+                  {stats ? `Judge: ${stats.judge} / 10` : (
+                    <span className="inline-block h-4 w-28 bg-[var(--color-muted-fill)] animate-pulse rounded" />
+                  )}
                 </span>
               </div>
             </motion.div>
@@ -355,79 +359,3 @@ export const Hero: React.FC = () => {
     </section>
   );
 };
-
-// TelemetryTicker component (copied and adjusted for hero fold pin)
-const TelemetryTicker: React.FC = () => {
-  const [episodes, setEpisodes] = useState<EpisodeSummary[]>([]);
-
-  useEffect(() => {
-    api.episodes().then(setEpisodes);
-  }, []);
-
-  if (episodes.length === 0) return null;
-
-  return (
-    <div className="relative overflow-hidden border-t border-[var(--color-hairline)] bg-[var(--color-panel)] py-1">
-      {/* Scanline Overlay Effect */}
-      <div className="pointer-events-none absolute inset-0 z-10 opacity-[0.03] bg-[linear-gradient(to bottom,transparent_50%,var(--color-ink)_50%)] bg-[length:100%_4px] animate-scanline" />
-
-      <div className="flex whitespace-nowrap animate-marquee">
-        {[...episodes, ...episodes].map((ep, i) => (
-          <div key={i} className="mx-12 flex items-center gap-4">
-            <motion.div
-              whileHover={{ scale: 1.02, filter: 'brightness(1.2)' }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              className="flex items-center gap-2 cursor-default px-2 py-1 rounded-sm transition-colors hover:bg-white/[0.02]"
-            >
-              <span className="text-xs font-mono uppercase tracking-wider text-[var(--color-soft-ink)] opacity-60">ID</span>
-              <span className="text-sm font-mono font-medium text-[var(--color-ink)]">[{ep.episode_id}]</span>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.02, filter: 'brightness(1.2)' }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              className="flex items-center gap-2 cursor-default px-2 py-1 rounded-sm transition-colors hover:bg-white/[0.02]"
-            >
-              <span className="text-xs font-mono uppercase tracking-wider text-[var(--color-soft-ink)] opacity-60">MODEL</span>
-              <span className="text-sm font-mono font-medium text-[var(--color-ink)]">{ep.model}</span>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.02, filter: 'brightness(1.2)' }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              className="flex items-center gap-2 cursor-default px-2 py-1 rounded-sm transition-colors hover:bg-white/[0.02]"
-            >
-              <span className="text-xs font-mono uppercase tracking-wider text-[var(--color-soft-ink)] opacity-60">STATUS</span>
-              <span className={`text-sm font-mono font-medium ${ep.passed ? 'text-[var(--color-pass)]' : 'text-[var(--color-fail)]'}`}>
-                {ep.passed ? '● PASSED' : '● FAILED'}
-              </span>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.02, filter: 'brightness(1.2)' }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              className="flex items-center gap-2 cursor-default px-2 py-1 rounded-sm transition-colors hover:bg-white/[0.02]"
-            >
-              <span className="text-xs font-mono uppercase tracking-wider text-[var(--color-soft-ink)] opacity-60">REWARD</span>
-              <span className="text-sm font-mono font-medium text-[var(--color-ink)]">{ep.final_reward.toFixed(2)}</span>
-            </motion.div>
-            <div className="text-[var(--color-hairline)]">|</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Type import for TelemetryTicker
-interface EpisodeSummary {
-  episode_id: string;
-  model: string;
-  passed: boolean;
-  final_reward: number;
-  num_steps: number;
-  judge_score: number | null;
-  task_id: string;
-  status: string;
-  is_fixture: boolean;
-}

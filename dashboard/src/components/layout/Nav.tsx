@@ -6,7 +6,7 @@ const blackBoxSpring = {
   type: 'spring',
   stiffness: 260,
   damping: 26,
-};
+} as const
 
 export const Nav: React.FC = () => {
   return (
@@ -41,7 +41,7 @@ export const Nav: React.FC = () => {
         {/* Black pill GitHub right */}
         <div className="flex items-center justify-end w-1/3">
           <a
-            href="https://github.com"
+            href="https://github.com/Shivain-codes/Agent-gym-"
             target="_blank"
             rel="noreferrer"
             className="rounded-sm bg-black px-4 py-1.5 text-xs font-mono text-white transition-all hover:bg-zinc-800 active:scale-95"

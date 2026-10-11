@@ -84,6 +84,12 @@ export const api = {
     get<any[]>(`/episodes/${episodeId}/diagnostics`),
   battle: (taskId: string, modelA: string, modelB: string) =>
     get<any>(`/episodes/battle?task_id=${taskId}&model_a=${modelA}&model_b=${modelB}`),
+  exportDatasetUrl: () => `${BASE}/export/dataset`,
+  datasheet: async (): Promise<string> => {
+    const res = await fetch(`${BASE}/export/datasheet`);
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText} for /export/datasheet`);
+    return res.text();
+  },
 };
 
 export { BASE as API_BASE };

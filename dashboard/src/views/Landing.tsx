@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, useSpring, useTransform } from 'motion/react';
-import { api, type EpisodeSummary, type TaskOut } from '../api';
+import { api, type EpisodeSummary, type TaskOut, type LeaderboardRow } from '../api';
 import { Hero } from '../components/landing/Hero';
 import { TelemetryTicker } from '../components/landing/TelemetryTicker';
 import { MiniReplay } from '../components/landing/MiniReplay';
@@ -11,7 +11,7 @@ const blackBoxSpring = {
   type: 'spring',
   stiffness: 260,
   damping: 26,
-};
+} as const
 
 const CountUp = ({ value, label }: { value: number | string, label: string }) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -80,18 +80,31 @@ const StatsStrip: React.FC = () => {
 };
 
 const FreshFromGym: React.FC = () => {
-  const [episodes, setEpisodes] = useState<EpisodeSummary[]>([]);
+  const [episodes, setEpisodes] = useState<EpisodeSummary[] | null>(null);
   const [tasks, setTasks] = useState<TaskOut[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([api.episodes(), api.tasks()]).then(([eps, tks]) => {
-      setEpisodes(eps.sort((a, b) => b.episode_id.localeCompare(a.episode_id)).slice(0, 3));
+    Promise.all([api.episodes().catch(() => [] as EpisodeSummary[]), api.fixtures().catch(() => [] as EpisodeSummary[]), api.tasks().catch(() => [] as TaskOut[])]).then(([eps, fixs, tks]) => {
+      const pool = eps.length > 0 ? eps : fixs;
+      // Diversify: prefer distinct tasks so cards never repeat the same task name
+      const seen = new Set<string>();
+      const picked: EpisodeSummary[] = [];
+      const sorted = [...pool].sort((a, b) => b.episode_id.localeCompare(a.episode_id));
+      for (const ep of sorted) {
+        if (!seen.has(ep.task_id)) { seen.add(ep.task_id); picked.push(ep); }
+        if (picked.length === 3) break;
+      }
+      for (const ep of sorted) {
+        if (picked.length === 3) break;
+        if (!picked.includes(ep)) picked.push(ep);
+      }
+      setEpisodes(picked);
       setTasks(tks);
     });
   }, []);
 
-  const getTaskName = (id: string) => tasks.find(t => t.id === id)?.name ?? id;
+  const getTaskName = (id: string) => tasks.find(t => t.id === id)?.name ?? id.replace(/-/g, ' ');
 
   return (
     <section className="px-6 py-24 border-t border-[var(--color-border)] bg-white">
@@ -107,7 +120,19 @@ const FreshFromGym: React.FC = () => {
           </div>
         </div>
         <div className="grid gap-8 md:grid-cols-3">
-          {episodes.map((ep) => (
+          {episodes === null ? (
+            [0, 1, 2].map((i) => (
+              <div key={i} className="p-8 rounded-2xl border border-[var(--color-border)] bg-white">
+                <div className="h-3 w-2/3 bg-[var(--color-muted-fill)] animate-pulse rounded mb-4" />
+                <div className="h-6 w-1/2 bg-[var(--color-muted-fill)] animate-pulse rounded mb-8" />
+                <div className="h-20 w-full bg-[var(--color-muted-fill)] animate-pulse rounded" />
+              </div>
+            ))
+          ) : episodes.length === 0 ? (
+            <div className="md:col-span-3 py-16 text-center font-mono text-sm text-[var(--color-micro)] border border-dashed border-[var(--color-border)] rounded-2xl">
+              No trajectories recorded yet — run the gym to populate this feed.
+            </div>
+          ) : episodes.map((ep) => (
             <motion.div
               key={ep.episode_id}
               whileHover={{ y: -4 }}
@@ -204,11 +229,19 @@ const HowItWorks: React.FC = () => {
 };
 
 const ModelComparison: React.FC = () => {
-  const models = [
-    { rank: '01', name: 'Nano', trait: 'Fast / Efficient', stats: { latency: '12ms', throughput: 'High', judge: '6.2/10' }, color: 'text-[var(--color-body)]' },
-    { rank: '02', name: 'Super', trait: 'Balanced', stats: { latency: '45ms', throughput: 'Mid', judge: '8.1/10' }, color: 'text-[var(--color-amber)]' },
-    { rank: '03', name: 'Ultra', trait: 'State-of-the-Art', stats: { latency: '120ms', throughput: 'Low', judge: '9.4/10' }, color: 'text-[var(--color-ink)]' },
-  ];
+  const [rows, setRows] = useState<LeaderboardRow[] | null>(null);
+
+  useEffect(() => {
+    api.leaderboard()
+      .then((data) => {
+        const order = ['nano', 'super', 'ultra'];
+        setRows([...data].sort((a, b) => order.indexOf(a.model.toLowerCase()) - order.indexOf(b.model.toLowerCase())));
+      })
+      .catch(() => setRows([]));
+  }, []);
+
+  const ultra = rows?.find((r) => r.model.toLowerCase() === 'ultra');
+  const loading = rows === null;
 
   return (
     <section id="models" className="px-6 py-32 bg-white border-t border-[var(--color-border)]">
@@ -227,7 +260,8 @@ const ModelComparison: React.FC = () => {
                 <h2 className="font-display text-4xl font-bold tracking-tighter text-[var(--color-ink)] uppercase">Model Comparison</h2>
               </div>
               <p className="text-lg text-[var(--color-body)] leading-relaxed max-w-md">
-                Comparing the trade-offs between speed, cost, and judge-verified correctness.
+                All three models pass every task. The gym still separates them — on efficiency
+                and on code quality.
               </p>
             </motion.div>
           </div>
@@ -244,44 +278,67 @@ const ModelComparison: React.FC = () => {
                   Ultra is fastest. <br />
                   <span className="text-[var(--color-body)]">The judge disagrees.</span>
                 </h3>
-                <div className="mt-8 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-amber)] opacity-70">
-                  <span>5.2 steps</span>
-                  <span className="text-[var(--color-border)]">/</span>
-                  <span>9.6 judge</span>
+                <div className="mt-8 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-accent-ink)]">
+                  {loading ? (
+                    <span className="h-4 w-40 bg-[var(--color-muted-fill)] animate-pulse rounded" />
+                  ) : ultra ? (
+                    <>
+                      <span>{ultra.avg_steps.toFixed(1)} steps</span>
+                      <span className="text-[var(--color-border)]">/</span>
+                      <span>{ultra.avg_judge_score?.toFixed(1) ?? '—'} judge</span>
+                    </>
+                  ) : (
+                    <span>5.2 steps / 9.6 judge</span>
+                  )}
                 </div>
               </motion.div>
 
               <div className="overflow-x-auto">
+                {loading ? (
+                  <div className="space-y-3">
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className="h-14 w-full bg-[var(--color-muted-fill)] animate-pulse rounded-lg" />
+                    ))}
+                  </div>
+                ) : rows && rows.length > 0 ? (
                 <table className="w-full border-collapse font-mono text-sm">
                   <thead className="bg-[var(--color-soft-fill)]">
                     <tr className="text-[10px] uppercase text-[var(--color-micro)] border-b border-[var(--color-border)]">
                       <th className="text-left py-4 pl-4">Rank</th>
                       <th className="text-left py-4">Model</th>
-                      <th className="text-right py-4">Latency</th>
-                      <th className="text-right py-4">Throughput</th>
-                      <th className="text-right py-4 pr-4">Judge Score</th>
+                      <th className="text-right py-4">Avg Steps</th>
+                      <th className="text-right py-4">Pass Rate</th>
+                      <th className="text-right py-4 pr-4">Judge</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white">
-                    {models.map((m) => (
+                    {rows.map((r, i) => {
+                      const isUltra = r.model.toLowerCase() === 'ultra';
+                      return (
                       <tr
-                        key={m.name}
+                        key={r.model}
                         className={cn(
-                        "border-b border-[var(--color-border)] transition-colors hover:bg-white/[0.02]",
-                        m.name === 'Ultra' && "bg-[var(--color-amber)]/10 border-l-2 border-l-[var(--color-amber)]"
+                        "border-b border-[var(--color-border)] transition-colors",
+                        isUltra && "bg-[var(--color-amber)]/10 border-l-2 border-l-[var(--color-amber)]"
                         )}
                       >
-                        <td className="py-4 pl-4 text-[var(--color-body)] opacity-50">{m.rank}</td>
-                        <td className="py-4 font-bold text-[var(--color-ink)]">{m.name}</td>
-                        <td className="py-4 text-right text-[var(--color-body)]">{m.stats.latency}</td>
-                        <td className="py-4 text-right text-[var(--color-body)]">{m.stats.throughput}</td>
-                        <td className={cn("py-4 text-right pr-4 font-bold", m.name === 'Ultra' ? 'text-[var(--color-amber)]' : 'text-[var(--color-ink)]')}>
-                          {m.stats.judge}
+                        <td className="py-4 pl-4 text-[var(--color-body)] opacity-50">0{i + 1}</td>
+                        <td className="py-4 font-bold text-[var(--color-ink)] capitalize">{r.model}</td>
+                        <td className="py-4 text-right text-[var(--color-body)]">{r.avg_steps.toFixed(1)}</td>
+                        <td className="py-4 text-right text-[var(--color-body)]">{(r.pass_rate * 100).toFixed(0)}%</td>
+                        <td className={cn("py-4 text-right pr-4 font-bold", isUltra ? 'text-[var(--color-accent-ink)]' : 'text-[var(--color-ink)]')}>
+                          {r.avg_judge_score != null ? `${r.avg_judge_score.toFixed(2)}` : '—'}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
+                ) : (
+                  <div className="py-16 text-center font-mono text-sm text-[var(--color-micro)] border border-dashed border-[var(--color-border)] rounded-2xl">
+                    No completed episodes yet — run the gym to populate this table.
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -292,6 +349,17 @@ const ModelComparison: React.FC = () => {
 };
 
 const DatasetSection: React.FC = () => {
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetText, setSheetText] = useState<string | null>(null);
+  const [sheetError, setSheetError] = useState<string | null>(null);
+
+  const openDatasheet = () => {
+    setSheetOpen(true);
+    setSheetText(null);
+    setSheetError(null);
+    api.datasheet().then(setSheetText).catch((e) => setSheetError(String(e)));
+  };
+
   return (
     <section id="dataset" className="px-6 py-32 border-t border-[var(--color-border)] bg-white">
       <div className="mx-auto max-w-7xl">
@@ -313,14 +381,17 @@ const DatasetSection: React.FC = () => {
                 Each entry contains a full sequence of thoughts, tool calls, and environment responses.
               </p>
               <div className="flex flex-wrap gap-4">
-                <motion.button
+                <motion.a
+                  href={api.exportDatasetUrl()}
+                  download
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="rounded-sm bg-[var(--color-amber)] px-6 py-2 text-xs font-mono font-bold text-[var(--color-bg)] hover:opacity-90 transition-opacity"
                 >
                   EXPORT JSONL
-                </motion.button>
+                </motion.a>
                 <motion.button
+                  onClick={openDatasheet}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="rounded-sm border border-[var(--color-border)] px-6 py-2 text-xs font-mono text-[var(--color-ink)] hover:bg-[var(--color-border)] transition-colors"
@@ -344,6 +415,40 @@ const DatasetSection: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Datasheet modal */}
+      {sheetOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-6"
+          onClick={() => setSheetOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl border border-[var(--color-border)] bg-white p-8 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
+                SYS_LOG // DATASHEET
+              </p>
+              <button
+                onClick={() => setSheetOpen(false)}
+                className="font-mono text-xs text-[var(--color-micro)] hover:text-[var(--color-ink)]"
+              >
+                CLOSE ✕
+              </button>
+            </div>
+            {sheetError ? (
+              <p className="font-mono text-sm text-[var(--color-fail)]">{sheetError}</p>
+            ) : sheetText === null ? (
+              <div className="h-24 animate-pulse rounded bg-[var(--color-muted-fill)]" />
+            ) : (
+              <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-[var(--color-ink)]">
+                {sheetText}
+              </pre>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 };

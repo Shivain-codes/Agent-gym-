@@ -185,11 +185,28 @@ def battle_mode(task_id: str, model_a: str, model_b: str):
 @app.get("/export/dataset")
 def export_dataset():
     """Bundle all trajectories into a single JSONL and generate a datasheet."""
-    import json
+    bundle_path, _ = _generate_export_files()
+    return FileResponse(bundle_path, filename="agentgym_dataset.jsonl")
+
+
+@app.get("/export/datasheet")
+def export_datasheet():
+    """Return the generated dataset datasheet as a text file."""
+    _, datasheet_path = _generate_export_files()
+    return FileResponse(datasheet_path, filename="agentgym_datasheet.txt", media_type="text/plain")
+
+
+def _generate_export_files():
+    """Generate the JSONL bundle + datasheet; return (bundle_path, datasheet_path)."""
     from pathlib import Path
 
+    # NOTE: exports live in trajectories/exports/ (not trajectories/ itself),
+    # otherwise _list_episode_ids() would count the bundle as a phantom episode.
+    export_dir = Path("trajectories/exports")
+    export_dir.mkdir(parents=True, exist_ok=True)
+
     # 1. Bundle trajectories
-    bundle_path = Path("trajectories/dataset_export.jsonl")
+    bundle_path = export_dir / "dataset_export.jsonl"
     with bundle_path.open("w", encoding="utf-8") as out:
         for eid in storage._list_episode_ids():
             for line in storage.iter_trajectory_raw(eid):
@@ -197,7 +214,7 @@ def export_dataset():
             out.write("\n")
 
     # 2. Generate simple datasheet
-    datasheet_path = Path("trajectories/datasheet.txt")
+    datasheet_path = export_dir / "datasheet.txt"
     summaries = storage.list_episode_summaries()
 
     total_eps = len(summaries)
@@ -210,7 +227,7 @@ def export_dataset():
         f.write(f"Overall Pass Rate: {(passed_eps/total_eps if total_eps else 0):.2%}\n\n")
         f.write("License: MIT\n")
 
-    return FileResponse(bundle_path, filename="agentgym_dataset.jsonl")
+    return bundle_path, datasheet_path
 
 
 @app.get("/fixtures", response_model=list[EpisodeSummary])
@@ -315,8 +332,8 @@ def leaderboard() -> list[LeaderboardRow]:
                 model=model,
                 episodes=n,
                 pass_rate=round(passed / n, 4) if n else 0.0,
-                avg_reward=round(_avg([e.get("final_reward", 0.0) for e in eps]), 4),
-                avg_steps=round(_avg([e.get("num_steps", 0, 0.0)]), 2),
+                avg_reward=round(_avg([ep.get("final_reward", 0.0) for ep in eps]), 4),
+                avg_steps=round(_avg([ep.get("num_steps", 0) for ep in eps]), 2),
                 avg_judge_score=(
                     round(_avg(judge_scores), 2) if judge_scores else None
                 ),
