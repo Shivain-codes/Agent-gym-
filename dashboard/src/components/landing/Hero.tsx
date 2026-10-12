@@ -175,7 +175,7 @@ export const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative min-h-screen overflow-hidden px-6 pt-32 pb-0 md:px-12 md:pt-48">
+    <section className="relative min-h-screen overflow-hidden px-6 pt-6 pb-0 md:px-12 md:pt-8">
       {/* L1 — White + dot-grid with edge-fade mask (z-0) */}
       <div
         className="absolute inset-0 z-0 opacity-40 pointer-events-none"
