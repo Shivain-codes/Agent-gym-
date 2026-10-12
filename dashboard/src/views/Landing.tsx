@@ -68,7 +68,7 @@ const StatsStrip: React.FC = () => {
   if (!stats) return <div className="w-full border-y border-[var(--color-border)] py-12 flex justify-around items-center opacity-0" />;
 
   return (
-    <div className="w-full border-y border-[var(--color-border)] py-12 bg-[var(--color-panel)]">
+    <div className="w-full border-y border-[var(--color-border)] py-12">
       <div className="mx-auto max-w-7xl px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
         <CountUp value={stats.episodes} label="Recorded Episodes" />
         <CountUp value={stats.models} label={stats.models === 1 ? "Nemotron Model" : "Nemotron Models"} />
@@ -107,7 +107,7 @@ const FreshFromGym: React.FC = () => {
   const getTaskName = (id: string) => tasks.find(t => t.id === id)?.name ?? id.replace(/-/g, ' ');
 
   return (
-    <section id="fresh" className="px-6 py-24 border-t border-[var(--color-border)] bg-[var(--color-panel)] scroll-mt-24">
+    <section id="fresh" className="px-6 py-24 border-t border-[var(--color-border)] scroll-mt-24">
       <div className="mx-auto max-w-7xl">
         <div className="flex items-baseline justify-between mb-16">
           <div className="flex items-baseline gap-4">
@@ -223,7 +223,7 @@ const HowItWorks: React.FC = () => {
   ];
 
   return (
-    <section id="how-it-works" className="relative px-6 py-32 border-t border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
+    <section id="how-it-works" className="relative px-6 py-32 border-t border-[var(--color-border)] overflow-hidden">
       {/* Dot-grid texture */}
       <div
         className="absolute inset-0 opacity-30 pointer-events-none"
@@ -343,7 +343,7 @@ const ModelComparison: React.FC = () => {
   const loading = rows === null;
 
   return (
-    <section id="models" className="px-6 py-32 bg-[var(--color-panel)] border-t border-[var(--color-border)]">
+    <section id="models" className="px-6 py-32 border-t border-[var(--color-border)]">
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-4">
@@ -453,7 +453,7 @@ const DatasetSection: React.FC = () => {
   };
 
   return (
-    <section id="dataset" className="px-6 py-32 border-t border-[var(--color-border)] bg-[var(--color-panel)]">
+    <section id="dataset" className="px-6 py-32 border-t border-[var(--color-border)]">
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-5">

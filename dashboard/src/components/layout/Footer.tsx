@@ -2,7 +2,7 @@ import React from 'react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="border-t border-[var(--color-hairline)] bg-[var(--color-bg)] py-12 text-[var(--color-body)]">
+    <footer className="border-t border-[var(--color-hairline)] py-12 text-[var(--color-body)]">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-6 md:grid-cols-4">
         <div className="col-span-1">
           <div className="mb-4 flex items-center gap-2">

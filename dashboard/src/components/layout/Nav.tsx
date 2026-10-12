@@ -14,7 +14,7 @@ export const Nav: React.FC = () => {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={blackBoxSpring}
-      className="sticky top-0 z-50 w-full border-b border-[var(--color-hairline)] bg-[var(--color-bg)] px-6 py-4"
+      className="sticky top-0 z-50 w-full border-b border-[var(--color-hairline)] bg-[var(--color-bg)]/80 backdrop-blur-md px-6 py-4"
     >
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center h-18">
         {/* Wordmark left */}

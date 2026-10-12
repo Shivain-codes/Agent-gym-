@@ -23,8 +23,8 @@ export const ParticleField: React.FC = () => {
     interface Node { x: number; y: number; vx: number; vy: number; r: number; green: boolean }
     let nodes: Node[] = [];
 
-    const LINK_DIST = 150;
-    const COUNT = Math.min(90, Math.max(45, Math.floor((window.innerWidth * window.innerHeight) / 26000)));
+    const LINK_DIST = 160;
+    const COUNT = Math.min(100, Math.max(55, Math.floor((window.innerWidth * window.innerHeight) / 22000)));
 
     const seed = () => {
       nodes = Array.from({ length: COUNT }, () => ({
@@ -32,7 +32,7 @@ export const ParticleField: React.FC = () => {
         y: Math.random() * h,
         vx: (Math.random() - 0.5) * 0.22,
         vy: (Math.random() - 0.5) * 0.22,
-        r: Math.random() * 1.4 + 0.6,
+        r: Math.random() * 1.6 + 0.8,
         green: Math.random() < 0.35,
       }));
     };
@@ -62,7 +62,7 @@ export const ParticleField: React.FC = () => {
           const dy = a.y - b.y;
           const d = Math.hypot(dx, dy);
           if (d < LINK_DIST) {
-            const alpha = (1 - d / LINK_DIST) * 0.14;
+            const alpha = (1 - d / LINK_DIST) * 0.2;
             ctx.strokeStyle = `rgba(118, 185, 0, ${alpha.toFixed(3)})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -76,8 +76,8 @@ export const ParticleField: React.FC = () => {
       // Nodes
       for (const n of nodes) {
         ctx.fillStyle = n.green
-          ? 'rgba(118, 185, 0, 0.5)'
-          : 'rgba(255, 255, 255, 0.28)';
+          ? 'rgba(118, 185, 0, 0.65)'
+          : 'rgba(255, 255, 255, 0.38)';
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
         ctx.fill();
