@@ -41,7 +41,7 @@ const TelemetryRain: React.FC<TelemetryRainProps> = ({ className = '' }) => {
 
     // Draw telemetry dashes
     // We'll generate deterministic pseudo-random dashes based on position
-    const dashCount = 300;
+    const dashCount = 120;
     const now = prefersReducedMotion ? 0 : Date.now() * 0.00015; // Very slow drift
 
     for (let i = 0; i < dashCount; i++) {
@@ -72,9 +72,9 @@ const TelemetryRain: React.FC<TelemetryRainProps> = ({ className = '' }) => {
       // 2px wide
       const w = 2;
 
-      // Color: ~8% in #76B900 at 50% opacity, rest zinc-300
+      // Color: ~8% in #76B900 at 40% opacity, rest zinc-300 at reduced opacity
       const isAccent = randColor < 0.08;
-      ctx.fillStyle = isAccent ? 'rgba(118, 185, 0, 0.5)' : 'rgba(212, 212, 216, 0.85)';
+      ctx.fillStyle = isAccent ? 'rgba(118, 185, 0, 0.4)' : 'rgba(212, 212, 216, 0.45)';
       ctx.fillRect(x, y, w, h);
     }
   }, [prefersReducedMotion]);
@@ -177,16 +177,6 @@ export const Hero: React.FC = () => {
 
   return (
     <section className="relative min-h-screen overflow-hidden px-6 pt-6 pb-0 md:px-12 md:pt-8">
-      {/* L1 — White + dot-grid with edge-fade mask (z-0) */}
-      <div
-        className="absolute inset-0 z-0 opacity-40 pointer-events-none"
-        style={{
-          backgroundImage: `radial-gradient(circle, #d4d4d8 1px, transparent 1px)`,
-          backgroundSize: '24px 24px',
-          maskImage: 'radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 100%)',
-        }}
-      />
-
       {/* L2 — TELEMETRY CANVAS: data waterfall (z-10) */}
       <TelemetryRain className="z-10" />
 
