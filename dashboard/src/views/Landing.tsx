@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { motion, useSpring, useTransform } from 'motion/react';
 import { api, type EpisodeSummary, type TaskOut, type LeaderboardRow } from '../api';
 import { Hero } from '../components/landing/Hero';
-import { TelemetryTicker } from '../components/landing/TelemetryTicker';
 import { MiniReplay } from '../components/landing/MiniReplay';
 import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -457,7 +456,6 @@ export const Landing: React.FC = () => {
   return (
     <div className="flex flex-col">
       <Hero />
-      <TelemetryTicker />
       <StatsStrip />
       <FreshFromGym />
       <HowItWorks />
