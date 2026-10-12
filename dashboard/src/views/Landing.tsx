@@ -145,9 +145,8 @@ const FreshFromGym: React.FC = () => {
             return (
             <motion.div
               key={ep.episode_id}
-              whileHover={{ y: -4 }}
               onClick={() => navigate(`/replay/${ep.episode_id}`)}
-              className="cursor-pointer rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] hover:border-[var(--color-amber)] hover:shadow-xl transition-all group relative overflow-hidden flex flex-col"
+              className="cursor-pointer rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] hover:border-[var(--color-amber)]/60 hover:bg-white/[0.02] transition-colors duration-200 group relative overflow-hidden flex flex-col"
             >
               {/* Status accent bar */}
               <div className={cn("h-1 w-full", ep.passed ? "bg-gradient-to-r from-green-500 to-emerald-400" : "bg-gradient-to-r from-red-500 to-rose-400")} />

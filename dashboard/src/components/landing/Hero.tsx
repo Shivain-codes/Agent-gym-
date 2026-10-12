@@ -37,8 +37,8 @@ export const Hero: React.FC = () => {
       {/* Single ambient glow — the only decoration */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-0 h-[700px] w-[1100px] -translate-x-1/2 -translate-y-1/3 rounded-full opacity-25"
-        style={{ background: 'radial-gradient(ellipse, rgba(118,185,0,0.35), transparent 65%)' }}
+        className="pointer-events-none absolute left-1/2 top-0 h-[700px] w-[1100px] -translate-x-1/2 -translate-y-1/3 rounded-full opacity-15"
+        style={{ background: 'radial-gradient(ellipse, rgba(118,185,0,0.28), transparent 65%)' }}
       />
       {/* Fine grid texture */}
       <div
