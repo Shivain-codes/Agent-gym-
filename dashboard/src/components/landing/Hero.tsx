@@ -272,15 +272,15 @@ export const Hero: React.FC = () => {
             <div className="flex items-center justify-center gap-6 font-mono text-[13px] text-zinc-500">
               {stats ? (
                 <>
-                  <StatItem value={stats.episodes} label="episodes" />
+                  <StatItem value={stats.episodes} label={stats.episodes === 1 ? "episode" : "episodes"} />
                   <div className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
-                  <StatItem value={stats.models} label="models" />
+                  <StatItem value={stats.models} label={stats.models === 1 ? "model" : "models"} />
                   <div className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
                   <div className="flex items-center gap-1.5">
                     <span className="text-[var(--color-ink)] font-bold">
                       {stats.judgeArr.join(' / ')}
                     </span>
-                    <span>judge</span>
+                    <span>avg judge</span>
                   </div>
                 </>
               ) : (
@@ -291,7 +291,7 @@ export const Hero: React.FC = () => {
                   <div className="w-1 h-1 rounded-full bg-[var(--color-border)]" />
                   <div className="flex items-center gap-1.5">
                     <div className="h-4 w-24 bg-[var(--color-muted-fill)] animate-pulse rounded" />
-                    <span className="text-[var(--color-micro)]">judge</span>
+                    <span className="text-[var(--color-micro)]">avg judge</span>
                   </div>
                 </>
               )}
