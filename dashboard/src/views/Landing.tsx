@@ -70,7 +70,7 @@ const StatsStrip: React.FC = () => {
     <div className="w-full border-y border-[var(--color-border)] py-12 bg-[var(--color-panel)]">
       <div className="mx-auto max-w-7xl px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
         <CountUp value={stats.episodes} label="Recorded Episodes" />
-        <CountUp value={stats.models} label="Nemotron Models" />
+        <CountUp value={stats.models} label={stats.models === 1 ? "Nemotron Model" : "Nemotron Models"} />
         <CountUp value={stats.judge} label="Avg Judge Score" />
         <CountUp value={stats.steps} label="Avg Steps" />
       </div>
@@ -286,6 +286,45 @@ const HowItWorks: React.FC = () => {
   );
 };
 
+const ComparisonHeadline: React.FC<{ rows: LeaderboardRow[] }> = ({ rows }) => {
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  if (rows.length === 0) return null;
+  if (rows.length === 1) {
+    const r = rows[0];
+    return (
+      <>
+        <h3 className="text-6xl md:text-9xl font-display font-bold tracking-tighter text-[var(--color-ink)] leading-none">
+          {cap(r.model)} holds <br />
+          <span className="text-[var(--color-body)]">the board.</span>
+        </h3>
+        <div className="mt-8 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-accent-ink)]">
+          <span>{r.avg_steps.toFixed(1)} steps</span>
+          <span className="text-[var(--color-border)]">/</span>
+          <span>{r.avg_judge_score?.toFixed(1) ?? '—'} judge</span>
+        </div>
+      </>
+    );
+  }
+  const fastest = [...rows].sort((a, b) => a.avg_steps - b.avg_steps)[0];
+  const bestJudge = [...rows].sort((a, b) => (b.avg_judge_score ?? 0) - (a.avg_judge_score ?? 0))[0];
+  const split = fastest.model !== bestJudge.model;
+  return (
+    <>
+      <h3 className="text-6xl md:text-9xl font-display font-bold tracking-tighter text-[var(--color-ink)] leading-none">
+        {cap(fastest.model)} is fastest. <br />
+        <span className="text-[var(--color-body)]">
+          {split ? 'The judge disagrees.' : 'The judge agrees.'}
+        </span>
+      </h3>
+      <div className="mt-8 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-accent-ink)]">
+        <span>{fastest.avg_steps.toFixed(1)} steps</span>
+        <span className="text-[var(--color-border)]">/</span>
+        <span>{bestJudge.avg_judge_score?.toFixed(1) ?? '—'} judge · {cap(bestJudge.model)}</span>
+      </div>
+    </>
+  );
+};
+
 const ModelComparison: React.FC = () => {
   const [rows, setRows] = useState<LeaderboardRow[] | null>(null);
 
@@ -298,7 +337,6 @@ const ModelComparison: React.FC = () => {
       .catch(() => setRows([]));
   }, []);
 
-  const ultra = rows?.find((r) => r.model.toLowerCase() === 'ultra');
   const loading = rows === null;
 
   return (
@@ -318,8 +356,13 @@ const ModelComparison: React.FC = () => {
                 <h2 className="font-display text-4xl font-bold tracking-tighter text-[var(--color-ink)] uppercase">Model Comparison</h2>
               </div>
               <p className="text-lg text-[var(--color-body)] leading-relaxed max-w-md">
-                All three models pass every task. The gym still separates them — on efficiency
-                and on code quality.
+                {rows && rows.length >= 2 ? (
+                  <>All three models pass every task. The gym still separates them — on efficiency
+                  and on code quality.</>
+                ) : (
+                  <>One model on the board, every task passed. The gym is ready for rivals —
+                  that's when efficiency and code quality start to diverge.</>
+                )}
               </p>
             </motion.div>
           </div>
@@ -332,23 +375,11 @@ const ModelComparison: React.FC = () => {
                 transition={blackBoxSpring}
                 className="w-full py-16 border-y border-[var(--color-border)] text-center bg-[var(--color-panel)]"
               >
-                <h3 className="text-6xl md:text-9xl font-display font-bold tracking-tighter text-[var(--color-ink)] leading-none">
-                  Ultra is fastest. <br />
-                  <span className="text-[var(--color-body)]">The judge disagrees.</span>
-                </h3>
-                <div className="mt-8 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-accent-ink)]">
-                  {loading ? (
-                    <span className="h-4 w-40 bg-[var(--color-muted-fill)] animate-pulse rounded" />
-                  ) : ultra ? (
-                    <>
-                      <span>{ultra.avg_steps.toFixed(1)} steps</span>
-                      <span className="text-[var(--color-border)]">/</span>
-                      <span>{ultra.avg_judge_score?.toFixed(1) ?? '—'} judge</span>
-                    </>
-                  ) : (
-                    <span>5.2 steps / 9.6 judge</span>
-                  )}
-                </div>
+                {loading ? (
+                  <div className="h-10 w-64 bg-[var(--color-muted-fill)] animate-pulse rounded mx-auto" />
+                ) : (
+                  <ComparisonHeadline rows={rows ?? []} />
+                )}
               </motion.div>
 
               <div className="overflow-x-auto">
