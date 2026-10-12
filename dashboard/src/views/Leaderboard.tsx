@@ -152,7 +152,7 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
         </p>
         <p className="mt-3 font-display text-3xl font-bold tracking-tight text-[var(--color-ink)] md:text-4xl">
           {cap(insight.fastest.model)} is fastest.{" "}
-          <span className="text-[var(--color-body)]">The judge <span className="serif-accent">disagrees.</span></span>
+          <span className="text-[var(--color-body)]">The judge disagrees.</span>
         </p>
         <p className="mt-3 max-w-2xl font-mono text-xs leading-relaxed text-[var(--color-body)]">
           {cap(insight.fastest.model)} averages {fmt(insight.fastest.avg_steps)} steps per task —

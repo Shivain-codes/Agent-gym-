@@ -109,7 +109,7 @@ export const Hero: React.FC = () => {
                   animate="visible"
                 >
                   {i === 1 ? (
-                    <><span className="serif-accent text-[var(--color-amber)]">learn</span> to code.</>
+                    <>learn <span className="text-[var(--color-amber)]">to code.</span></>
                   ) : (
                     line
                   )}
