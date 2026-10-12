@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { motion } from "motion/react";
 import { api } from "../../api";
 import { cn } from "../../lib/utils";
+import { Dropdown } from "../../components/ui/Dropdown";
 
 const blackBoxSpring = {
   type: "spring",
@@ -108,8 +109,6 @@ function BattlePicker({ onStart }: { onStart: (t: string, a: string, b: string) 
   }, []);
 
   const valid = taskId && modelA && modelB && modelA !== modelB;
-  const selectCls =
-    "w-full rounded-sm border border-[var(--color-hairline)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-sm text-[var(--color-ink)] focus:border-[var(--color-amber)] focus:outline-none";
 
   return (
     <motion.div
@@ -126,38 +125,35 @@ function BattlePicker({ onStart }: { onStart: (t: string, a: string, b: string) 
           <label className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-[var(--color-body)]">
             Task
           </label>
-          <select value={taskId} onChange={(e) => setTaskId(e.target.value)} className={selectCls}>
-            {tasks.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.id} — {t.name}
-              </option>
-            ))}
-          </select>
+          <Dropdown
+            ariaLabel="Task"
+            value={taskId}
+            onChange={setTaskId}
+            options={tasks.map((t) => ({ value: t.id, label: `${t.id} — ${t.name}` }))}
+          />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-[var(--color-body)]">
               Model A
             </label>
-            <select value={modelA} onChange={(e) => setModelA(e.target.value)} className={selectCls}>
-              {models.map((m) => (
-                <option key={m} value={m} className="capitalize">
-                  {m}
-                </option>
-              ))}
-            </select>
+            <Dropdown
+              ariaLabel="Model A"
+              value={modelA}
+              onChange={setModelA}
+              options={models.map((m) => ({ value: m, label: m }))}
+            />
           </div>
           <div>
             <label className="mb-2 block font-mono text-[10px] uppercase tracking-widest text-[var(--color-body)]">
               Model B
             </label>
-            <select value={modelB} onChange={(e) => setModelB(e.target.value)} className={selectCls}>
-              {models.map((m) => (
-                <option key={m} value={m} className="capitalize">
-                  {m}
-                </option>
-              ))}
-            </select>
+            <Dropdown
+              ariaLabel="Model B"
+              value={modelB}
+              onChange={setModelB}
+              options={models.map((m) => ({ value: m, label: m }))}
+            />
           </div>
         </div>
         {modelA === modelB && modelA && (

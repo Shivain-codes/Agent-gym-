@@ -5,6 +5,7 @@ import { api, type EpisodeOut, type EpisodeSummary, type StepEvent } from "../ap
 import { diffLines, diffStats, type DiffLine } from "../lib/diff";
 import { actionColor, actionLabel } from "../lib/ui";
 import { cn } from "../lib/utils";
+import { Dropdown } from "../components/ui/Dropdown";
 
 export default function EpisodeReplay() {
   const { episodeId } = useParams();
@@ -559,16 +560,18 @@ function Controls({
           {isPlaying ? "⏸ Pause" : "▶ Play"}
         </motion.button>
 
-        <select
-          value={playbackSpeed}
-          onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
-          className="rounded-sm border border-[var(--color-hairline)] bg-[var(--color-panel)] px-2 py-2 text-xs font-mono text-[var(--color-soft-ink)] outline-none"
-        >
-          <option value={2000}>0.5x</option>
-          <option value={1000}>1.0x</option>
-          <option value={500}>2.0x</option>
-          <option value={200}>5.0x</option>
-        </select>
+        <Dropdown
+          ariaLabel="Playback speed"
+          size="sm"
+          value={String(playbackSpeed)}
+          onChange={(v) => setPlaybackSpeed(Number(v))}
+          options={[
+            { value: "2000", label: "0.5x" },
+            { value: "1000", label: "1.0x" },
+            { value: "500", label: "2.0x" },
+            { value: "200", label: "5.0x" },
+          ]}
+        />
       </div>
 
       <span className="font-mono text-sm text-[var(--color-soft-ink)]">
