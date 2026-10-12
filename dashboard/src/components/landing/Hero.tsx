@@ -196,11 +196,11 @@ export const Hero: React.FC = () => {
       {/* L4 — Content (z-30) */}
       <div className="relative z-30 mx-auto max-w-7xl">
         {/* NAV — 72px: wordmark left, links center, black pill GitHub right */}
-        <nav className="mb-[96px] h-18 flex items-center justify-between border-b border-[var(--color-hairline)]">
-          <div className="flex items-center gap-3">
+        <nav className="mb-[96px] h-18 grid grid-cols-[1fr_auto_1fr] items-center border-b border-[var(--color-hairline)]">
+          <div className="flex items-center gap-3 justify-self-start">
             <span className="font-display text-xl font-bold tracking-tighter text-[var(--color-ink)]">AgentGym</span>
           </div>
-          <div className="hidden items-center gap-8 md:flex">
+          <div className="hidden items-center gap-8 md:flex justify-self-center">
             {['Leaderboard', 'Replay', 'Tasks'].map((item) => (
               <a
                 key={item}
@@ -210,8 +210,10 @@ export const Hero: React.FC = () => {
                 {item}
               </a>
             ))}
+          </div>
+          <div className="flex items-center justify-self-end">
             <a
-              href="https://github.com"
+              href="https://github.com/Shivain-codes/Agent-gym-"
               target="_blank"
               rel="noreferrer"
               className="rounded-sm bg-black px-4 py-1.5 text-xs font-mono text-white transition-all hover:bg-zinc-800 active:scale-95"
