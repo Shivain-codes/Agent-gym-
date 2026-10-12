@@ -96,6 +96,20 @@ export const api = {
     get<any[]>(`/episodes/${episodeId}/diagnostics`),
   battle: (taskId: string, modelA: string, modelB: string) =>
     get<any>(`/episodes/battle?task_id=${taskId}&model_a=${modelA}&model_b=${modelB}`),
+  health: () =>
+    get<{ status: string; live_runs?: { model_key_configured: boolean; max_steps_per_run: number } }>(
+      "/health"
+    ),
+  runEpisode: async (taskId: string, model: string, maxSteps = 10) => {
+    const res = await fetch(`${BASE}/episodes/run`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ task_id: taskId, model: model, max_steps: maxSteps }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.detail || `${res.status} ${res.statusText}`);
+    return body as { episode_id: string; task_id: string; model: string; status: string };
+  },
   exportDatasetUrl: () => `${BASE}/export/dataset`,
   datasheet: async (): Promise<string> => {
     const res = await fetch(`${BASE}/export/datasheet`);

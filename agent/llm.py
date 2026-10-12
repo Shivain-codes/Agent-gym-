@@ -178,7 +178,9 @@ class CannedClient:
 
 
 def have_api_key() -> bool:
-    return bool(os.environ.get("NEBIUS_API_KEY"))
+    return bool(
+        os.environ.get("NEBIUS_API_KEY") or os.environ.get("NVIDIA_API_KEY")
+    )
 
 
 def get_client(model: str = DEFAULT_MODEL, force_stub: bool = False):

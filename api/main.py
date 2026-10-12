@@ -11,6 +11,7 @@ Routes:
 from __future__ import annotations
 
 import threading
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -55,8 +56,18 @@ _loader = TaskLoader("tasks")
 
 
 @router.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+def health() -> dict:
+    from agent.llm import have_api_key
+
+    return {
+        "status": "ok",
+        "live_runs": {
+            # Live episode runs need a model key on the server; without one
+            # the UI hides the live-run controls instead of faking it.
+            "model_key_configured": have_api_key(),
+            "max_steps_per_run": _LIVE_MAX_STEPS,
+        },
+    }
 
 
 @router.get("/tasks", response_model=list[TaskOut])
@@ -101,36 +112,94 @@ def _run_episode_bg(
         storage.update_run(episode_id, status="failed", error=str(exc))
 
 
+# --- live-run credit guards -------------------------------------------------
+# Live episode runs burn real API credits, so they are deliberately throttled:
+# one run at a time, capped steps, and a short cooldown between runs.
+_LIVE_MAX_STEPS = 10
+_LIVE_COOLDOWN_S = 60
+_run_lock = threading.Lock()
+_last_run_started = 0.0
+
+
+def _live_run_with_lock(
+    episode_id: str,
+    task_id: str,
+    model: str,
+    max_steps: int,
+    require_reproduce: bool,
+) -> None:
+    """Run the episode, then release the single-run lock."""
+    try:
+        _run_episode_bg(episode_id, task_id, model, max_steps, require_reproduce)
+    finally:
+        _run_lock.release()
+
+
 @router.post("/episodes/run", response_model=RunEpisodeResponse)
 def run_episode(req: RunEpisodeRequest) -> RunEpisodeResponse:
-    """Kick off an agent episode in the background and return its id."""
+    """Kick off an agent episode in the background and return its id.
+
+    Credit guards: no model key -> 503 (never fake a "live" run with the
+    stub); one run at a time -> 429; steps capped; short cooldown between
+    runs so a stray double-click or script can't drain the API key.
+    """
+    global _last_run_started
+    from agent.llm import have_api_key
+
+    if not have_api_key():
+        raise HTTPException(
+            status_code=503,
+            detail="live runs unavailable: no model API key configured on the server",
+        )
     try:
         _loader.load(req.task_id)
     except KeyError:
         raise HTTPException(status_code=404, detail=f"task not found: {req.task_id}")
 
-    episode_id = make_episode_id(req.task_id, req.model)
-    storage.register_run(episode_id, req.task_id, req.model)
+    if not _run_lock.acquire(blocking=False):
+        raise HTTPException(
+            status_code=429,
+            detail="a live run is already in progress — please wait for it to finish",
+        )
+    try:
+        now = time.monotonic()
+        wait = _LIVE_COOLDOWN_S - (now - _last_run_started)
+        if wait > 0:
+            raise HTTPException(
+                status_code=429,
+                detail=f"live runs are rate-limited — try again in {int(wait) + 1}s",
+            )
+        _last_run_started = now
 
-    thread = threading.Thread(
-        target=_run_episode_bg,
-        args=(
-            episode_id,
-            req.task_id,
-            req.model,
-            req.max_steps,
-            req.require_reproduce,
-        ),
-        daemon=True,
-    )
-    thread.start()
+        max_steps = max(1, min(req.max_steps, _LIVE_MAX_STEPS))
+        episode_id = make_episode_id(req.task_id, req.model)
+        storage.register_run(episode_id, req.task_id, req.model)
 
-    return RunEpisodeResponse(
-        episode_id=episode_id,
-        task_id=req.task_id,
-        model=req.model,
-        status="running",
-    )
+        thread = threading.Thread(
+            target=_live_run_with_lock,
+            args=(
+                episode_id,
+                req.task_id,
+                req.model,
+                max_steps,
+                req.require_reproduce,
+            ),
+            daemon=True,
+        )
+        thread.start()
+
+        return RunEpisodeResponse(
+            episode_id=episode_id,
+            task_id=req.task_id,
+            model=req.model,
+            status="running",
+        )
+    except HTTPException:
+        _run_lock.release()
+        raise
+    except Exception:
+        _run_lock.release()
+        raise
 
 
 @router.get("/episodes", response_model=list[EpisodeSummary])

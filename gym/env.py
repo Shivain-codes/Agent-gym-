@@ -38,7 +38,7 @@ from gym.reward import (
     parse_pytest,
     test_counts,
 )
-from gym.sandbox import Sandbox
+from gym.sandbox import Sandbox, get_sandbox
 from gym.task_loader import Task
 
 MAX_STEPS = 25
@@ -94,7 +94,7 @@ class GymEnv:
         max_steps: int = MAX_STEPS,
     ) -> None:
         self.task = task
-        self.sandbox = sandbox or Sandbox()
+        self.sandbox = sandbox or get_sandbox()
         self.reward = reward or Reward()
         self.max_steps = max_steps
 

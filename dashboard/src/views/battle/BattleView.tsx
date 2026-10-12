@@ -16,6 +16,7 @@ export default function BattleView() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [live, setLive] = useState<{ taskId: string; modelA: string; modelB: string } | null>(null);
 
   const taskId = searchParams.get("task_id");
   const modelA = searchParams.get("model_a");
@@ -34,6 +35,20 @@ export default function BattleView() {
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
   }, [taskId, modelA, modelB, hasParams]);
+
+  const handleLiveDone = (t: string, a: string, b: string) => {
+    setLoading(true);
+    api.battle(t, a, b)
+      .then((d) => {
+        setLive(null);
+        setData(d);
+      })
+      .catch((e) => {
+        setLive(null);
+        setError(String(e));
+      })
+      .finally(() => setLoading(false));
+  };
 
   return (
     <motion.section
@@ -57,9 +72,22 @@ export default function BattleView() {
 
       {loading ? (
         <BattleSkeleton />
+      ) : live ? (
+        <LiveBattle
+          taskId={live.taskId}
+          modelA={live.modelA}
+          modelB={live.modelB}
+          onDone={() => handleLiveDone(live.taskId, live.modelA, live.modelB)}
+          onCancel={() => setLive(null)}
+        />
       ) : !hasParams ? (
         <BattlePicker
           onStart={(t, a, b) => setSearchParams({ task_id: t, model_a: a, model_b: b })}
+          onLiveStart={(t, a, b) => {
+            setData(null);
+            setError(null);
+            setLive({ taskId: t, modelA: a, modelB: b });
+          }}
         />
       ) : error ? (
         <div className="flex flex-col items-start gap-4 font-mono">
@@ -88,12 +116,27 @@ export default function BattleView() {
 
 /* ------------------------------------------------------------------ picker */
 
-function BattlePicker({ onStart }: { onStart: (t: string, a: string, b: string) => void }) {
+const LIVE_MODELS = [
+  { value: "nano", label: "nano — Nemotron 3 Nano" },
+  { value: "super", label: "super — Nemotron 3 Super" },
+  { value: "ultra", label: "ultra — Nemotron 3 Ultra" },
+];
+
+function BattlePicker({
+  onStart,
+  onLiveStart,
+}: {
+  onStart: (t: string, a: string, b: string) => void;
+  onLiveStart: (t: string, a: string, b: string) => void;
+}) {
   const [tasks, setTasks] = useState<any[]>([]);
   const [models, setModels] = useState<string[]>([]);
   const [taskId, setTaskId] = useState("");
   const [modelA, setModelA] = useState("");
   const [modelB, setModelB] = useState("");
+  const [liveMode, setLiveMode] = useState(false);
+  const [liveAvailable, setLiveAvailable] = useState<boolean | null>(null);
+  const [liveMaxSteps, setLiveMaxSteps] = useState(10);
 
   useEffect(() => {
     Promise.all([api.tasks().catch(() => []), api.leaderboard().catch(() => [])]).then(
@@ -106,9 +149,25 @@ function BattlePicker({ onStart }: { onStart: (t: string, a: string, b: string) 
         if (ms.length > 1) setModelB(ms[1]);
       }
     );
+    api.health()
+      .then((h) => {
+        setLiveAvailable(!!h.live_runs?.model_key_configured);
+        if (h.live_runs?.max_steps_per_run) setLiveMaxSteps(h.live_runs.max_steps_per_run);
+      })
+      .catch(() => setLiveAvailable(false));
   }, []);
 
+  useEffect(() => {
+    if (liveMode) {
+      if (!modelA) setModelA("nano");
+      if (!modelB || modelB === modelA) setModelB("super");
+    }
+  }, [liveMode]);
+
   const valid = taskId && modelA && modelB && modelA !== modelB;
+  const modelOptions = liveMode
+    ? LIVE_MODELS
+    : models.map((m) => ({ value: m, label: m }));
 
   return (
     <motion.div
@@ -141,7 +200,7 @@ function BattlePicker({ onStart }: { onStart: (t: string, a: string, b: string) 
               ariaLabel="Model A"
               value={modelA}
               onChange={setModelA}
-              options={models.map((m) => ({ value: m, label: m }))}
+              options={modelOptions}
             />
           </div>
           <div>
@@ -152,7 +211,7 @@ function BattlePicker({ onStart }: { onStart: (t: string, a: string, b: string) 
               ariaLabel="Model B"
               value={modelB}
               onChange={setModelB}
-              options={models.map((m) => ({ value: m, label: m }))}
+              options={modelOptions}
             />
           </div>
         </div>
@@ -161,15 +220,197 @@ function BattlePicker({ onStart }: { onStart: (t: string, a: string, b: string) 
             Pick two different models to battle.
           </p>
         )}
+        {liveAvailable === true && (
+          <button
+            onClick={() => setLiveMode(!liveMode)}
+            className={cn(
+              "flex w-full items-center justify-between rounded-lg border px-4 py-3 font-mono text-[11px] uppercase tracking-widest transition-colors",
+              liveMode
+                ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-accent-ink)]"
+                : "border-[var(--color-hairline)] text-[var(--color-body)] hover:border-[var(--color-micro)]"
+            )}
+          >
+            <span className="flex items-center gap-2">
+              <span
+                className={cn(
+                  "inline-block h-2 w-2 rounded-full",
+                  liveMode ? "bg-[var(--color-accent)] animate-pulse" : "bg-[var(--color-micro)]"
+                )}
+              />
+              Live run — solve fresh right now
+            </span>
+            <span className="text-[10px] opacity-70">{liveMode ? "ON" : "OFF"}</span>
+          </button>
+        )}
+        {liveAvailable === false && (
+          <p className="font-mono text-[10px] leading-relaxed text-[var(--color-micro)]">
+            Live runs unavailable — no model key configured on the server.
+          </p>
+        )}
+        {liveMode && liveAvailable && (
+          <p className="font-mono text-[10px] leading-relaxed text-[var(--color-micro)]">
+            Runs both models live, one after the other. Capped at {liveMaxSteps} steps
+            per run · one live run at a time.
+          </p>
+        )}
         <button
-          onClick={() => valid && onStart(taskId, modelA, modelB)}
+          onClick={() =>
+            valid && (liveMode ? onLiveStart(taskId, modelA, modelB) : onStart(taskId, modelA, modelB))
+          }
           disabled={!valid}
           className="w-full rounded-full bg-[var(--color-amber)] px-8 py-4 text-xs font-mono font-bold text-black transition-all hover:bg-[var(--color-accent-ink)] active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Start battle
+          {liveMode ? "Run live battle" : "Start battle"}
         </button>
       </div>
     </motion.div>
+  );
+}
+
+/* ------------------------------------------------------------------ live run */
+
+function LiveBattle({
+  taskId,
+  modelA,
+  modelB,
+  onDone,
+  onCancel,
+}: {
+  taskId: string;
+  modelA: string;
+  modelB: string;
+  onDone: () => void;
+  onCancel: () => void;
+}) {
+  const [epA, setEpA] = useState<any>(null);
+  const [epB, setEpB] = useState<any>(null);
+  const [phase, setPhase] = useState<"a" | "b">("a");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    const pollUntilDone = async (episodeId: string, setEp: (e: any) => void) => {
+      for (;;) {
+        if (cancelled) throw new Error("__cancelled__");
+        const ep = await api.episode(episodeId);
+        if (cancelled) throw new Error("__cancelled__");
+        setEp(ep);
+        if (ep.status === "completed" || ep.status === "failed") return ep;
+        await sleep(3000);
+      }
+    };
+
+    (async () => {
+      try {
+        const a = await api.runEpisode(taskId, modelA);
+        if (cancelled) return;
+        const doneA: any = await pollUntilDone(a.episode_id, setEpA);
+        if (doneA.status === "failed")
+          throw new Error(`${modelA} run failed — try again or pick another model.`);
+        if (cancelled) return;
+        setPhase("b");
+        const b = await api.runEpisode(taskId, modelB);
+        if (cancelled) return;
+        const doneB: any = await pollUntilDone(b.episode_id, setEpB);
+        if (doneB.status === "failed")
+          throw new Error(`${modelB} run failed — try again or pick another model.`);
+        if (cancelled) return;
+        onDone();
+      } catch (e: any) {
+        if (!cancelled && e.message !== "__cancelled__")
+          setError(e.message || "Live run failed.");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={blackBoxSpring}
+      className="mx-auto max-w-2xl rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-8"
+    >
+      <p className="mb-6 flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-accent-ink)]">
+        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-[var(--color-accent)]" />
+        Live battle in progress
+      </p>
+      <div className="space-y-4">
+        <LiveRow
+          label={`Model A · ${modelA}`}
+          ep={epA}
+          active={phase === "a" && !error}
+        />
+        <LiveRow
+          label={`Model B · ${modelB}`}
+          ep={epB}
+          active={phase === "b" && !error}
+          waiting={phase === "a"}
+        />
+      </div>
+      {error ? (
+        <div className="mt-6 flex flex-col items-start gap-4">
+          <p className="font-mono text-xs text-[var(--color-fail)]">{error}</p>
+          <button
+            onClick={onCancel}
+            className="rounded-sm border border-[var(--color-hairline)] px-4 py-2 font-mono text-xs text-[var(--color-ink)] transition-colors hover:bg-[var(--color-hairline)]"
+          >
+            ← Back to setup
+          </button>
+        </div>
+      ) : (
+        <p className="mt-6 font-mono text-[10px] leading-relaxed text-[var(--color-micro)]">
+          Each model is solving the task live on the server. Runs are capped at 10
+          steps — grab a coffee, this takes a few minutes.
+        </p>
+      )}
+    </motion.div>
+  );
+}
+
+function LiveRow({
+  label,
+  ep,
+  active,
+  waiting = false,
+}: {
+  label: string;
+  ep: any;
+  active: boolean;
+  waiting?: boolean;
+}) {
+  const steps = ep?.steps?.length ?? 0;
+  const done = ep?.status === "completed";
+  const status = done
+    ? `done · ${steps} steps${ep.passed ? " · passed" : " · failed"}`
+    : waiting
+      ? "queued"
+      : active
+        ? `solving… ${steps} step${steps === 1 ? "" : "s"}`
+        : "starting…";
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-between rounded-lg border px-4 py-3",
+        done
+          ? "border-[var(--color-accent)]/40"
+          : "border-[var(--color-hairline)]"
+      )}
+    >
+      <span className="font-mono text-xs text-[var(--color-ink)]">{label}</span>
+      <span className="flex items-center gap-2 font-mono text-[11px] text-[var(--color-body)]">
+        {active && !done && (
+          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-[var(--color-amber)]" />
+        )}
+        {status}
+      </span>
+    </div>
   );
 }
 

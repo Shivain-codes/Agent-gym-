@@ -20,6 +20,7 @@ Implementation notes
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import tempfile
@@ -269,3 +270,112 @@ class Sandbox:
         if not res.ok:
             return []
         return [line for line in res.stdout.splitlines() if line.strip()]
+
+
+class LocalSandbox:
+    """Subprocess-based sandbox for hosts without a Docker daemon (e.g. Render).
+
+    Same interface as :class:`Sandbox`. Weaker isolation: commands run as the
+    host user inside a temp dir with a wall-clock timeout. Fine for demoing
+    the agent loop on hosts without Docker — not for untrusted code.
+    """
+
+    def __init__(self, timeout_s: int = 30):
+        self.timeout_s = timeout_s
+        self.workdir: Path | None = None
+
+    def start(self, files: dict[str, str] | None = None) -> None:
+        self.stop()
+        self.workdir = Path(tempfile.mkdtemp(prefix="agentgym-"))
+        if files:
+            for path, content in files.items():
+                self.write_file(path, content)
+
+    def stop(self) -> None:
+        if self.workdir is not None:
+            shutil.rmtree(self.workdir, ignore_errors=True)
+            self.workdir = None
+
+    def __enter__(self) -> "LocalSandbox":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.stop()
+
+    def _require(self) -> Path:
+        if self.workdir is None:
+            raise SandboxError("sandbox not started")
+        return self.workdir
+
+    def _resolve(self, path: str) -> Path:
+        base = self._require()
+        p = Path(path)
+        return p if p.is_absolute() else base / p
+
+    def exec(self, command: str, user: str | None = None) -> SandboxResult:
+        """Run a shell command in the sandbox dir with a wall-clock timeout."""
+        workdir = self._require()
+        start = time.monotonic()
+        try:
+            proc = subprocess.run(
+                command,
+                shell=True,
+                cwd=workdir,
+                capture_output=True,
+                text=True,
+                timeout=self.timeout_s,
+            )
+        except subprocess.TimeoutExpired as exc:
+            duration = time.monotonic() - start
+            out = exc.stdout or b""
+            err = exc.stderr or b""
+            return SandboxResult(
+                exit_code=124,
+                stdout=out.decode() if isinstance(out, bytes) else (out or ""),
+                stderr=(err.decode() if isinstance(err, bytes) else (err or ""))
+                + f"\n[sandbox] command exceeded {self.timeout_s}s timeout",
+                duration_s=duration,
+                timed_out=True,
+            )
+        return SandboxResult(
+            exit_code=proc.returncode,
+            stdout=proc.stdout,
+            stderr=proc.stderr,
+            duration_s=time.monotonic() - start,
+        )
+
+    def write_file(self, path: str, content: str) -> None:
+        dest = self._resolve(path)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(content, encoding="utf-8")
+
+    def read_file(self, path: str) -> str:
+        dest = self._resolve(path)
+        try:
+            return dest.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise SandboxError(f"could not read {path}: {exc}")
+
+    def lock_path(self, path: str) -> None:
+        """Best-effort permission lock (no user separation without Docker)."""
+        dest = self._resolve(path)
+        if dest.exists():
+            os.chmod(dest, 0o700)
+
+    def grant_agent(self, path: str) -> None:
+        """No-op without Docker user separation."""
+
+    def list_files(self) -> list[str]:
+        base = self._require()
+        out = []
+        for p in base.rglob("*"):
+            if p.is_file() and "__pycache__" not in p.parts and p.suffix != ".pyc":
+                out.append(str(p.relative_to(base)))
+        return out
+
+
+def get_sandbox(timeout_s: int = 30):
+    """Docker sandbox when the CLI exists, else the local subprocess fallback."""
+    if shutil.which("docker") is not None:
+        return Sandbox(timeout_s=timeout_s)
+    return LocalSandbox(timeout_s=timeout_s)
