@@ -18,7 +18,18 @@ export const LiveTerminal: React.FC = () => {
   const [playing, setPlaying] = useState(true);
   const [speed, setSpeed] = useState(1);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const charRef = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.05 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -53,17 +64,19 @@ export const LiveTerminal: React.FC = () => {
   const step = steps[stepIdx];
   const isLastStep = stepIdx === steps.length - 1;
 
-  // Typewriter + phase machine
+  // Typewriter + phase machine (pauses off-screen to keep scroll smooth)
   useEffect(() => {
-    if (!step || !playing || phase === 'verdict') return;
+    if (!step || !playing || !visible || phase === 'verdict') return;
     clearTimers();
 
     if (reducedMotion) {
+      charRef.current = step.thought.length;
       setTyped(step.thought);
       setPhase('observation');
       later(() => {
         if (isLastStep) setPhase('verdict');
         else {
+          charRef.current = 0;
           setStepIdx((i) => i + 1);
           setPhase('thought');
           setTyped('');
@@ -73,12 +86,10 @@ export const LiveTerminal: React.FC = () => {
     }
 
     setPhase('thought');
-    setTyped('');
-    let ci = 0;
     const tick = () => {
-      ci += 1;
-      setTyped(step.thought.slice(0, ci));
-      if (ci < step.thought.length) {
+      charRef.current += 1;
+      setTyped(step.thought.slice(0, charRef.current));
+      if (charRef.current < step.thought.length) {
         timers.current.push(setTimeout(tick, TYPE_MS / speed));
       } else {
         later(() => setPhase('action'), 250);
@@ -86,6 +97,7 @@ export const LiveTerminal: React.FC = () => {
         later(() => {
           if (isLastStep) setPhase('verdict');
           else {
+            charRef.current = 0;
             setStepIdx((i) => i + 1);
             setPhase('thought');
             setTyped('');
@@ -96,11 +108,12 @@ export const LiveTerminal: React.FC = () => {
     timers.current.push(setTimeout(tick, TYPE_MS / speed));
     return clearTimers;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepIdx, playing, speed, episode, reducedMotion]);
+  }, [stepIdx, playing, speed, visible, episode, reducedMotion]);
 
   const jumpTo = useCallback((i: number) => {
     if (!episode) return;
     clearTimers();
+    charRef.current = 0;
     setStepIdx(Math.max(0, Math.min(i, steps.length - 1)));
     setPhase('thought');
     setTyped('');
@@ -136,7 +149,7 @@ export const LiveTerminal: React.FC = () => {
   const progress = steps.length > 0 ? ((stepIdx + (phase === 'verdict' ? 1 : 0)) / steps.length) * 100 : 0;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[#0C0C0F] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8)]">
+    <div ref={rootRef} className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[#0C0C0F] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8)]">
       {/* Title bar */}
       <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-3">
         <div className="flex items-center gap-3">

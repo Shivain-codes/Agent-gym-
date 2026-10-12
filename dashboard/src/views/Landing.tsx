@@ -6,10 +6,11 @@ import { MiniReplay } from '../components/landing/MiniReplay';
 import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 
-const blackBoxSpring = {
+// Softer spring for scroll-triggered reveals — settles without judder
+const revealSpring = {
   type: 'spring',
-  stiffness: 260,
-  damping: 26,
+  stiffness: 120,
+  damping: 24,
 } as const
 
 const CountUp = ({ value, label }: { value: number | string, label: string }) => {
@@ -233,8 +234,11 @@ const HowItWorks: React.FC = () => {
           maskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 100%)',
         }}
       />
-      {/* Subtle green glow */}
-      <div className="absolute top-1/3 -left-40 h-[500px] w-[500px] bg-[var(--color-amber)]/8 blur-[150px] rounded-full opacity-60 pointer-events-none" />
+      {/* Subtle green glow — radial gradient, no blur filter (cheap on scroll) */}
+      <div
+        className="absolute top-1/3 -left-40 h-[500px] w-[500px] rounded-full opacity-60 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(118,185,0,0.08), transparent 65%)' }}
+      />
       <div className="relative mx-auto max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-4">
@@ -242,7 +246,7 @@ const HowItWorks: React.FC = () => {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
-              transition={blackBoxSpring}
+              transition={revealSpring}
               className="sticky top-32"
             >
               <div className="flex items-baseline gap-4 mb-6">
@@ -261,7 +265,7 @@ const HowItWorks: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{
-                  ...blackBoxSpring,
+                  ...revealSpring,
                   delay: i * 0.1,
                 }}
                 className="relative group py-16 border-b border-[var(--color-border)] last:border-b-0"
@@ -348,7 +352,7 @@ const ModelComparison: React.FC = () => {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
-              transition={blackBoxSpring}
+              transition={revealSpring}
               className="sticky top-32"
             >
               <div className="flex items-baseline gap-4 mb-6">
@@ -372,7 +376,7 @@ const ModelComparison: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={blackBoxSpring}
+                transition={revealSpring}
                 className="w-full py-16 border-y border-[var(--color-border)] text-center bg-[var(--color-panel)]"
               >
                 {loading ? (
@@ -458,7 +462,7 @@ const DatasetSection: React.FC = () => {
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
-              transition={blackBoxSpring}
+              transition={revealSpring}
               className="text-left"
             >
               <div className="flex items-baseline gap-4 mb-6">
@@ -495,12 +499,15 @@ const DatasetSection: React.FC = () => {
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
-              transition={blackBoxSpring}
+              transition={revealSpring}
               className="relative z-10"
             >
               <MiniReplay />
             </motion.div>
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-[var(--color-amber)]/10 blur-3xl rounded-full pointer-events-none" />
+            <div
+              className="absolute -top-20 -right-20 w-64 h-64 rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(circle, rgba(118,185,0,0.10), transparent 65%)' }}
+            />
           </div>
         </div>
       </div>
