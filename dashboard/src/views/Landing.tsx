@@ -131,35 +131,84 @@ const FreshFromGym: React.FC = () => {
             <div className="md:col-span-3 py-16 text-center font-mono text-sm text-[var(--color-micro)] border border-dashed border-[var(--color-border)] rounded-2xl">
               No trajectories recorded yet — run the gym to populate this feed.
             </div>
-          ) : episodes.map((ep) => (
+          ) : episodes.map((ep) => {
+            const diffMatch = ep.task_id.match(/^(easy|medium|hard|expert)/i);
+            const difficulty = diffMatch ? diffMatch[1].toUpperCase() : 'TASK';
+            const diffColor =
+              difficulty === 'EASY' ? 'border-green-500/40 text-green-700 bg-green-50' :
+              difficulty === 'MEDIUM' ? 'border-blue-500/40 text-blue-700 bg-blue-50' :
+              difficulty === 'HARD' ? 'border-amber-500/40 text-amber-700 bg-amber-50' :
+              'border-purple-500/40 text-purple-700 bg-purple-50';
+            const stepSegs = 10;
+            const filledSegs = Math.min(ep.num_steps, stepSegs);
+            return (
             <motion.div
               key={ep.episode_id}
               whileHover={{ y: -4 }}
               onClick={() => navigate(`/replay/${ep.episode_id}`)}
-              className="cursor-pointer p-8 rounded-2xl border border-[var(--color-border)] bg-white hover:border-[var(--color-amber)] transition-all group relative overflow-hidden"
+              className="cursor-pointer rounded-2xl border border-[var(--color-border)] bg-white hover:border-[var(--color-amber)] hover:shadow-xl transition-all group relative overflow-hidden flex flex-col"
             >
-              <div className="absolute top-0 right-0 p-4">
-                <span className={cn(
-                  "text-[10px] font-mono px-2 py-0.5 rounded-full border",
-                  ep.passed ? "border-green-500 text-green-600 bg-green-50" : "border-red-500 text-red-600 bg-red-50"
-                )}>
-                  {ep.passed ? "PASSED" : "FAILED"}
-                </span>
-              </div>
-              <div className="mb-8">
-                <span className="font-mono text-[10px] text-[var(--color-micro)] block mb-2">{ep.episode_id}</span>
-                <h3 className="font-display text-xl font-bold text-[var(--color-ink)] line-clamp-1 group-hover:text-[var(--color-amber)] transition-colors">{getTaskName(ep.task_id)}</h3>
-              </div>
-              <div className="grid grid-cols-2 gap-y-4 font-mono text-[11px] border-t border-[var(--color-border)] pt-6">
-                <div className="text-[var(--color-micro)] uppercase text-[9px]">Model</div>
-                <div className="text-right text-[var(--color-ink)] font-bold">{ep.model}</div>
-                <div className="text-[var(--color-micro)] uppercase text-[9px]">Steps</div>
-                <div className="text-right text-[var(--color-ink)]">{ep.num_steps}</div>
-                <div className="text-[var(--color-micro)] uppercase text-[9px]">Judge Score</div>
-                <div className="text-right text-[var(--color-amber)] font-bold">{ep.judge_score ?? 'N/A'}</div>
+              {/* Status accent bar */}
+              <div className={cn("h-1 w-full", ep.passed ? "bg-gradient-to-r from-green-500 to-emerald-400" : "bg-gradient-to-r from-red-500 to-rose-400")} />
+              <div className="p-8 flex flex-col flex-1">
+                {/* Badges */}
+                <div className="flex items-center justify-between mb-6">
+                  <span className={cn("text-[10px] font-mono px-2.5 py-1 rounded-full border font-bold tracking-wider", diffColor)}>
+                    {difficulty}
+                  </span>
+                  <span className={cn(
+                    "text-[10px] font-mono px-2.5 py-1 rounded-full border font-bold tracking-wider",
+                    ep.passed ? "border-green-500 text-green-600 bg-green-50" : "border-red-500 text-red-600 bg-red-50"
+                  )}>
+                    {ep.passed ? "● PASSED" : "● FAILED"}
+                  </span>
+                </div>
+                {/* Task */}
+                <h3 className="font-display text-2xl font-bold tracking-tight text-[var(--color-ink)] line-clamp-2 group-hover:text-[var(--color-amber)] transition-colors leading-tight">{getTaskName(ep.task_id)}</h3>
+                <span className="font-mono text-[10px] text-[var(--color-micro)] block mt-2 mb-6">{ep.episode_id}</span>
+                {/* Step trajectory visual */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-[var(--color-micro)] mb-2">
+                    <span>Trajectory</span>
+                    <span className="text-[var(--color-ink)] font-bold">{ep.num_steps} steps</span>
+                  </div>
+                  <div className="flex gap-1">
+                    {Array.from({ length: stepSegs }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "h-1.5 flex-1 rounded-full",
+                          i < filledSegs
+                            ? ep.passed ? "bg-[var(--color-amber)]" : "bg-red-400"
+                            : "bg-[var(--color-hairline)]"
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-4 border-t border-[var(--color-border)] pt-6 mt-auto">
+                  <div>
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-[var(--color-micro)] mb-1">Model</div>
+                    <div className="font-mono text-sm font-bold text-[var(--color-ink)] capitalize">{ep.model}</div>
+                  </div>
+                  <div>
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-[var(--color-micro)] mb-1">Judge</div>
+                    <div className="font-mono text-sm font-bold text-[var(--color-amber)]">{ep.judge_score != null ? ep.judge_score.toFixed(1) : 'N/A'}</div>
+                  </div>
+                  <div>
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-[var(--color-micro)] mb-1">Reward</div>
+                    <div className="font-mono text-sm font-bold text-[var(--color-ink)]">{ep.final_reward.toFixed(2)}</div>
+                  </div>
+                </div>
+                {/* Hover CTA */}
+                <div className="mt-6 font-mono text-xs text-[var(--color-micro)] group-hover:text-[var(--color-amber)] transition-colors flex items-center gap-1">
+                  View replay <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
+                </div>
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
