@@ -55,7 +55,7 @@ export const LiveTerminal: React.FC = () => {
 
   // Typewriter + phase machine
   useEffect(() => {
-    if (!step || !playing) return;
+    if (!step || !playing || phase === 'verdict') return;
     clearTimers();
 
     if (reducedMotion) {
