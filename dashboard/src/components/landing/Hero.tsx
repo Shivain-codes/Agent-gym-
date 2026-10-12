@@ -138,6 +138,7 @@ const StatItem: React.FC<{ value: string | number; label: string }> = ({ value, 
 
 export const Hero: React.FC = () => {
   const [stats, setStats] = useState<{ episodes: number; models: number; judge: string; judgeArr: string[] } | null>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     Promise.all([api.episodes(), api.leaderboard()]).then(([episodes, leaderboard]) => {
@@ -266,7 +267,8 @@ export const Hero: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-fit rounded-full bg-black px-8 py-4 text-xs font-mono font-bold text-white hover:bg-zinc-800 transition-all shadow-sm"
+              onClick={() => stageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="w-fit rounded-full bg-black px-8 py-4 text-xs font-mono font-bold text-white hover:bg-zinc-800 transition-all shadow-sm cursor-pointer"
             >
               Explore the gym
             </motion.button>
@@ -302,7 +304,7 @@ export const Hero: React.FC = () => {
         </div>
 
         {/* PRODUCT STAGE — 64px below proof line */}
-        <div className="relative mt-16 flex justify-center">
+        <div ref={stageRef} className="relative mt-16 flex justify-center scroll-mt-24">
           <motion.div
             initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
