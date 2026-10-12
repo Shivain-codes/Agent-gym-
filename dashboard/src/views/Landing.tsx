@@ -106,7 +106,7 @@ const FreshFromGym: React.FC = () => {
   const getTaskName = (id: string) => tasks.find(t => t.id === id)?.name ?? id.replace(/-/g, ' ');
 
   return (
-    <section className="px-6 py-24 border-t border-[var(--color-border)] bg-white">
+    <section id="fresh" className="px-6 py-24 border-t border-[var(--color-border)] bg-white scroll-mt-24">
       <div className="mx-auto max-w-7xl">
         <div className="flex items-baseline justify-between mb-16">
           <div className="flex items-baseline gap-4">

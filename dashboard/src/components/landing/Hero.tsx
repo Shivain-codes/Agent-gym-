@@ -1,125 +1,15 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import { MiniReplay } from './MiniReplay';
 import { TelemetryTicker } from './TelemetryTicker';
-import { Trophy, FlaskConical } from 'lucide-react';
 
 const blackBoxSpring = {
   type: 'spring',
   stiffness: 260,
   damping: 26,
 } as const
-
-// Telemetry Rain Canvas Component
-interface TelemetryRainProps {
-  className?: string;
-}
-
-const TelemetryRain: React.FC<TelemetryRainProps> = ({ className = '' }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
-  }, []);
-
-  // Size the canvas backing store only on mount/resize — never per frame.
-  // (Resetting canvas.width every rAF reallocates the bitmap and can tear.)
-  const drawFrame = useCallback((ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
-    const dpr = window.devicePixelRatio || 1;
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-
-    // Draw telemetry dashes
-    // We'll generate deterministic pseudo-random dashes based on position
-    const dashCount = 120;
-    const now = prefersReducedMotion ? 0 : Date.now() * 0.00015; // Very slow drift
-
-    for (let i = 0; i < dashCount; i++) {
-      // Deterministic hash-based pseudo-random (decorrelated across
-      // consecutive i — a naive LCG step marches in lockstep and draws
-      // diagonal streaks instead of scattered rain).
-      const rand = (s: number) => {
-        const x = Math.sin(s * 127.1 + 311.7) * 43758.5453;
-        return x - Math.floor(x);
-      };
-
-      // Position - denser in the right third (empty space beside the headline)
-      const randX = rand(i * 4);
-      const randY = rand(i * 4 + 1);
-      const randH = rand(i * 4 + 2);
-      const randColor = rand(i * 4 + 3);
-
-      // Bias toward right third: 60% of dashes land in x ∈ [0.67, 1.0]
-      const xBias = randX < 0.6 ? 0.67 + randX * 0.55 : (randX - 0.6) * 1.675;
-      const x = xBias * width;
-
-      // Vertical position with slow drift
-      const y = (randY * height + now * 50) % (height + 100) - 50;
-
-      // Height: 8-64px
-      const h = 8 + randH * 56;
-
-      // 2px wide
-      const w = 2;
-
-      // Color: ~8% in #76B900 at 40% opacity, rest zinc-300 at reduced opacity
-      const isAccent = randColor < 0.08;
-      ctx.fillStyle = isAccent ? 'rgba(118, 185, 0, 0.4)' : 'rgba(212, 212, 216, 0.45)';
-      ctx.fillRect(x, y, w, h);
-    }
-  }, [prefersReducedMotion]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.max(1, Math.floor(canvas.clientWidth * dpr));
-      canvas.height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
-      drawFrame(ctx, canvas);
-    };
-    window.addEventListener('resize', resize);
-    resize();
-
-    if (!prefersReducedMotion) {
-      const animate = () => {
-        drawFrame(ctx, canvas);
-        animationRef.current = requestAnimationFrame(animate);
-      };
-      animationRef.current = requestAnimationFrame(animate);
-    }
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [drawFrame, prefersReducedMotion]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      // NOTE: canvas is a replaced element — inset-0 alone does NOT stretch it
-      // (it keeps its 300x150 intrinsic size). h-full w-full is required.
-      className={`absolute inset-0 h-full w-full pointer-events-none ${className}`}
-      aria-hidden="true"
-    />
-  );
-};
 
 // Skeleton shimmer for loading stats
 const StatSkeleton: React.FC = () => (
@@ -138,7 +28,7 @@ const StatItem: React.FC<{ value: string | number; label: string }> = ({ value, 
 
 export const Hero: React.FC = () => {
   const [stats, setStats] = useState<{ episodes: number; models: number; judge: string; judgeArr: string[] } | null>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     Promise.all([api.episodes(), api.leaderboard()]).then(([episodes, leaderboard]) => {
@@ -155,39 +45,23 @@ export const Hero: React.FC = () => {
     });
   }, []);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.15,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: blackBoxSpring,
-    },
+  const scrollToFresh = () => {
+    document.getElementById('fresh')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
-    <section className="relative min-h-screen overflow-hidden px-6 pt-6 pb-0 md:px-12 md:pt-8">
-      {/* L2 — TELEMETRY CANVAS: data waterfall (z-10) */}
-      <TelemetryRain className="z-10" />
+    <section className="relative overflow-hidden px-6 pt-6 pb-16 md:px-12 md:pt-8">
+      {/* Editorial index numeral — faint, oversized */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-10 left-2 select-none font-display text-[22rem] font-bold leading-none text-[var(--color-ink)]/[0.035]"
+      >
+        01
+      </div>
 
-      {/* L3 — Two radial glows (z-20) */}
-      <div className="absolute top-1/4 left-1/2 z-20 h-[600px] w-[600px] bg-[var(--color-amber)]/12 blur-[150px] rounded-full opacity-80 translate-x-[-50%] translate-y-[-50%]" />
-      <div className="absolute top-[58%] left-1/2 z-20 h-[800px] w-[800px] bg-[var(--color-amber)]/5 blur-[200px] rounded-full opacity-50 translate-x-[-50%] translate-y-[-50%]" />
-
-      {/* L4 — Content (z-30) */}
-      <div className="relative z-30 mx-auto max-w-7xl">
+      <div className="relative mx-auto max-w-7xl">
         {/* NAV — 72px: wordmark left, links center, black pill GitHub right */}
-        <nav className="mb-[96px] h-18 grid grid-cols-[1fr_auto_1fr] items-center border-b border-[var(--color-hairline)]">
+        <nav className="h-18 grid grid-cols-[1fr_auto_1fr] items-center border-b border-[var(--color-hairline)]">
           <div className="flex items-center gap-3 justify-self-start">
             <span className="font-display text-xl font-bold tracking-tighter text-[var(--color-ink)]">AgentGym</span>
           </div>
@@ -214,56 +88,62 @@ export const Hero: React.FC = () => {
           </div>
         </nav>
 
-        {/* TEXT STACK — centered, top 40% */}
-        <div className="text-center">
-          {/* Eyebrow */}
+        {/* HERO — asymmetric editorial grid: words left, product right */}
+        <div className="mt-14 md:mt-20 grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
+          {/* Left — headline block */}
           <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="mb-6 flex items-center justify-center gap-2 font-mono text-[12px] uppercase tracking-widest text-zinc-500"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...blackBoxSpring, delay: 0.1 }}
+            className="lg:col-span-5"
           >
-            <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-amber)]" />
-            TRAINING GYM FOR CODING AGENTS
-          </motion.div>
+            <div className="mb-7 flex flex-wrap items-center gap-3 font-mono text-[12px] uppercase tracking-widest text-zinc-500">
+              <span className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-amber)]" />
+                Training gym for coding agents
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-[10px] tracking-tight">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-amber)]" />
+                NVIDIA Hackathon
+              </span>
+            </div>
 
-          {/* H1 — Exactly 2 lines */}
-          <motion.h1
-            variants={itemVariants}
-            className="mb-6 font-display font-bold leading-[1.0] tracking-tight text-[var(--color-ink)] max-w-[900px] mx-auto"
-            style={{
-              fontSize: 'clamp(56px, 7vw, 96px)',
-            }}
-          >
-            Watch AI <span className="text-[#65A30D] relative inline-block">learn</span>{' '}
-            <br />
-            to code.
-          </motion.h1>
-
-          {/* Sub row */}
-          <motion.div
-            variants={itemVariants}
-            className="mb-8 flex items-center justify-center gap-3 text-[18px] text-zinc-600 leading-relaxed max-w-xl mx-auto"
-          >
-            <p>Broken repo <span className="text-[var(--color-amber)] font-mono">→</span> sandbox <span className="text-[var(--color-amber)] font-mono">→</span> scored trajectory.</p>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-white px-3 py-1 text-[10px] font-mono uppercase tracking-tight">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-amber)]" />
-              NVIDIA Hackathon
-            </span>
-          </motion.div>
-
-          {/* CTA + Proof line */}
-          <motion.div variants={itemVariants} className="flex flex-col items-center gap-4">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => stageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="w-fit rounded-full bg-black px-8 py-4 text-xs font-mono font-bold text-white hover:bg-zinc-800 transition-all shadow-sm cursor-pointer"
+            <h1
+              className="font-display font-bold leading-[1.02] tracking-tight text-[var(--color-ink)]"
+              style={{ fontSize: 'clamp(48px, 5.2vw, 80px)' }}
             >
-              Explore the gym
-            </motion.button>
+              Watch AI <span className="text-[#65A30D]">learn</span>
+              <br />
+              to code.<sup className="ml-1 align-super font-mono text-[0.35em] font-normal text-[var(--color-micro)]">1</sup>
+            </h1>
 
-            <div className="flex items-center justify-center gap-6 font-mono text-[13px] text-zinc-500">
+            <p className="mt-6 font-mono text-[15px] leading-relaxed text-zinc-600">
+              Broken repo <span className="text-[var(--color-amber)]">→</span> sandbox{' '}
+              <span className="text-[var(--color-amber)]">→</span> scored trajectory.
+            </p>
+            <p className="mt-3 max-w-sm font-mono text-[11px] leading-relaxed text-[var(--color-micro)]">
+              <sup className="mr-1">1</sup>Every step logged. Every run replayable. Nothing hidden.
+            </p>
+
+            <div className="mt-9 flex flex-wrap items-center gap-6">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={scrollToFresh}
+                className="rounded-full bg-black px-8 py-4 text-xs font-mono font-bold text-white hover:bg-zinc-800 transition-all shadow-sm cursor-pointer"
+              >
+                Explore the gym
+              </motion.button>
+              <button
+                onClick={() => navigate('/replay')}
+                className="group font-mono text-xs text-[var(--color-soft-ink)] hover:text-[var(--color-amber)] transition-colors"
+              >
+                Watch a replay{' '}
+                <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+              </button>
+            </div>
+
+            <div className="mt-10 flex items-center gap-6 border-t border-[var(--color-hairline)] pt-6 font-mono text-[13px] text-zinc-500">
               {stats ? (
                 <>
                   <StatItem value={stats.episodes} label={stats.episodes === 1 ? "episode" : "episodes"} />
@@ -291,62 +171,30 @@ export const Hero: React.FC = () => {
               )}
             </div>
           </motion.div>
-        </div>
 
-        {/* PRODUCT STAGE — 64px below proof line */}
-        <div ref={stageRef} className="relative mt-16 flex justify-center scroll-mt-24">
+          {/* Right — the product is the visual */}
           <motion.div
-            initial={{ opacity: 0, y: 60 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...blackBoxSpring, delay: 0.5 }}
-            className="relative w-full max-w-[1080px] translate-y-[64px]"
+            transition={{ ...blackBoxSpring, delay: 0.25 }}
+            className="lg:col-span-7"
           >
-            {/* Green glow halo spilling ~30% beyond edges */}
-            <div className="absolute inset-0 -z-10 rounded-[24px] bg-[var(--color-amber)]/10 blur-[80px] opacity-60 scale-130" />
-
-            {/* Dark replay viewer panel */}
-            <div className="relative z-10 rounded-2xl border border-white/10 bg-[var(--color-ink)] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.4)] overflow-hidden">
-              <MiniReplay />
+            <div className="relative">
+              {/* Single soft glow behind the panel */}
+              <div className="absolute -inset-8 rounded-[32px] bg-[var(--color-amber)]/10 blur-[90px] opacity-70 pointer-events-none" />
+              <div className="relative rounded-2xl border border-white/10 bg-[var(--color-ink)] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.4)] overflow-hidden">
+                <MiniReplay />
+              </div>
             </div>
-
-            {/* Floating Telemetry Card 1 - overlapping left edge */}
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
-              className="absolute -left-6 top-1/4 z-20 p-4 rounded-2xl border border-[var(--color-border)] bg-white/95 backdrop-blur shadow-xl flex items-center gap-4 max-w-[220px]"
-            >
-              <div className="p-2 rounded-lg bg-[var(--color-amber)]/10 text-[var(--color-amber)]">
-                <Trophy size={20} strokeWidth={2} />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[9px] font-mono uppercase text-[var(--color-micro)]">Performance</span>
-                <span className="text-sm font-display font-bold text-[var(--color-ink)]">
-                  {stats ? `Judge: ${stats.judge} / 10` : (
-                    <span className="inline-block h-4 w-28 bg-[var(--color-muted-fill)] animate-pulse rounded" />
-                  )}
-                </span>
-              </div>
-            </motion.div>
-
-            {/* Floating Telemetry Card 2 - overlapping right edge */}
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 1 }}
-              className="absolute -right-6 top-1/3 z-20 p-4 rounded-2xl border border-[var(--color-border)] bg-white/95 backdrop-blur shadow-xl flex items-center gap-4 max-w-[220px]"
-            >
-              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
-                <FlaskConical size={20} strokeWidth={2} />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[9px] font-mono uppercase text-[var(--color-micro)]">Efficiency</span>
-                <span className="text-sm font-display font-bold text-[var(--color-ink)]">Avg Steps: 5.4</span>
-              </div>
-            </motion.div>
+            <p className="mt-4 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-micro)]">
+              <span>Fig. 01 — Live trajectory replay</span>
+              <span className="hidden sm:inline">golden-easy-03-nano</span>
+            </p>
           </motion.div>
         </div>
 
-        {/* FOLD PIN — Episode ticker strip at very bottom with hairline top border */}
-        <div className="relative mt-8 border-t border-[var(--color-hairline)]">
+        {/* FOLD PIN — Episode ticker strip with hairline top border */}
+        <div className="mt-14 border-t border-[var(--color-hairline)]">
           <TelemetryTicker />
         </div>
       </div>
