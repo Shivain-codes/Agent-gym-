@@ -168,7 +168,7 @@ function BattlePicker({ onStart }: { onStart: (t: string, a: string, b: string) 
         <button
           onClick={() => valid && onStart(taskId, modelA, modelB)}
           disabled={!valid}
-          className="w-full rounded-full bg-black px-8 py-4 text-xs font-mono font-bold text-white transition-all hover:bg-zinc-800 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full rounded-full bg-[var(--color-amber)] px-8 py-4 text-xs font-mono font-bold text-black transition-all hover:bg-[var(--color-accent-ink)] active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Start battle
         </button>
@@ -235,14 +235,14 @@ function BattleResult({
         </p>
         <p className="mt-3 font-display text-3xl font-bold tracking-tight text-white">
           {cap(faster)} is faster
-          {stepDiff > 0 && <span className="text-zinc-400"> by {stepDiff} step{stepDiff === 1 ? "" : "s"}.</span>}
+          {stepDiff > 0 && <span className="text-[var(--color-body)]"> by {stepDiff} step{stepDiff === 1 ? "" : "s"}.</span>}
           {split ? (
-            <span className="text-zinc-400"> The judge prefers {betterJudge}.</span>
+            <span className="text-[var(--color-body)]"> The judge prefers {betterJudge}.</span>
           ) : (
-            <span className="text-zinc-400"> And the judge agrees.</span>
+            <span className="text-[var(--color-body)]"> And the judge agrees.</span>
           )}
         </p>
-        <p className="mt-3 font-mono text-xs leading-relaxed text-zinc-400">
+        <p className="mt-3 font-mono text-xs leading-relaxed text-[var(--color-body)]">
           {cap(modelA)}: {epA.num_steps} steps · judge {judgeA.toFixed(1)} ·{" "}
           {cap(modelB)}: {epB.num_steps} steps · judge {judgeB.toFixed(1)}
         </p>
@@ -300,7 +300,7 @@ function BattleColumn({ model, ep, color }: { model: string; ep: any; color: str
               <div className="text-xs italic text-[var(--color-soft-ink)] mb-2 line-clamp-2">
                 {s.thought}
               </div>
-              <div className="font-mono text-[11px] text-[var(--color-ink)] bg-black/5 p-2 rounded-sm truncate">
+              <div className="font-mono text-[11px] text-[var(--color-ink)] bg-white/5 p-2 rounded-sm truncate">
                 {JSON.stringify(s.action)}
               </div>
             </div>

@@ -111,9 +111,9 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
           </p>
           <p className="mt-3 font-display text-3xl font-bold tracking-tight text-white md:text-4xl">
             {cap(r.model)} passes everything.{" "}
-            <span className="text-zinc-400">Add a rival to see the real story.</span>
+            <span className="text-[var(--color-body)]">Add a rival to see the real story.</span>
           </p>
-          <p className="mt-3 max-w-2xl font-mono text-xs leading-relaxed text-zinc-400">
+          <p className="mt-3 max-w-2xl font-mono text-xs leading-relaxed text-[var(--color-body)]">
             {fmt(r.avg_steps)} steps per task · judge {fmt(r.avg_judge_score)}/10 ·{" "}
             {r.episodes} episodes. The gym's headline — speed vs quality — appears
             once two models share the board.
@@ -152,9 +152,9 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
         </p>
         <p className="mt-3 font-display text-3xl font-bold tracking-tight text-white md:text-4xl">
           {cap(insight.fastest.model)} is fastest.{" "}
-          <span className="text-zinc-400">The judge disagrees.</span>
+          <span className="text-[var(--color-body)]">The judge disagrees.</span>
         </p>
-        <p className="mt-3 max-w-2xl font-mono text-xs leading-relaxed text-zinc-400">
+        <p className="mt-3 max-w-2xl font-mono text-xs leading-relaxed text-[var(--color-body)]">
           {cap(insight.fastest.model)} averages {fmt(insight.fastest.avg_steps)} steps per task —
           but {cap(insight.bestJudge.model)} scores {fmt(insight.bestJudge.avg_judge_score)}/10
           on code quality. Speed and quality don't move together.

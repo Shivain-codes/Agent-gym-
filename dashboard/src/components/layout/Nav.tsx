@@ -44,7 +44,7 @@ export const Nav: React.FC = () => {
             href="https://github.com/Shivain-codes/Agent-gym-"
             target="_blank"
             rel="noreferrer"
-            className="rounded-sm bg-black px-4 py-1.5 text-xs font-mono text-white transition-all hover:bg-zinc-800 active:scale-95"
+            className="rounded-sm border border-[var(--color-border)] px-4 py-1.5 text-xs font-mono text-[var(--color-soft-ink)] transition-all hover:border-[var(--color-amber)] hover:text-[var(--color-amber)] active:scale-95"
           >
             GITHUB
           </a>

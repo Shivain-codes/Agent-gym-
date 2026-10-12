@@ -67,7 +67,7 @@ const StatsStrip: React.FC = () => {
   if (!stats) return <div className="w-full border-y border-[var(--color-border)] py-12 flex justify-around items-center opacity-0" />;
 
   return (
-    <div className="w-full border-y border-[var(--color-border)] py-12 bg-white">
+    <div className="w-full border-y border-[var(--color-border)] py-12 bg-[var(--color-panel)]">
       <div className="mx-auto max-w-7xl px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
         <CountUp value={stats.episodes} label="Recorded Episodes" />
         <CountUp value={stats.models} label="Nemotron Models" />
@@ -106,7 +106,7 @@ const FreshFromGym: React.FC = () => {
   const getTaskName = (id: string) => tasks.find(t => t.id === id)?.name ?? id.replace(/-/g, ' ');
 
   return (
-    <section id="fresh" className="px-6 py-24 border-t border-[var(--color-border)] bg-white scroll-mt-24">
+    <section id="fresh" className="px-6 py-24 border-t border-[var(--color-border)] bg-[var(--color-panel)] scroll-mt-24">
       <div className="mx-auto max-w-7xl">
         <div className="flex items-baseline justify-between mb-16">
           <div className="flex items-baseline gap-4">
@@ -121,7 +121,7 @@ const FreshFromGym: React.FC = () => {
         <div className="grid gap-8 md:grid-cols-3">
           {episodes === null ? (
             [0, 1, 2].map((i) => (
-              <div key={i} className="p-8 rounded-2xl border border-[var(--color-border)] bg-white">
+              <div key={i} className="p-8 rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)]">
                 <div className="h-3 w-2/3 bg-[var(--color-muted-fill)] animate-pulse rounded mb-4" />
                 <div className="h-6 w-1/2 bg-[var(--color-muted-fill)] animate-pulse rounded mb-8" />
                 <div className="h-20 w-full bg-[var(--color-muted-fill)] animate-pulse rounded" />
@@ -135,10 +135,10 @@ const FreshFromGym: React.FC = () => {
             const diffMatch = ep.task_id.match(/^(easy|medium|hard|expert)/i);
             const difficulty = diffMatch ? diffMatch[1].toUpperCase() : 'TASK';
             const diffColor =
-              difficulty === 'EASY' ? 'border-green-500/40 text-green-700 bg-green-50' :
-              difficulty === 'MEDIUM' ? 'border-blue-500/40 text-blue-700 bg-blue-50' :
-              difficulty === 'HARD' ? 'border-amber-500/40 text-amber-700 bg-amber-50' :
-              'border-purple-500/40 text-purple-700 bg-purple-50';
+              difficulty === 'EASY' ? 'border-green-500/40 text-green-400 bg-green-500/10' :
+              difficulty === 'MEDIUM' ? 'border-blue-500/40 text-blue-400 bg-blue-500/10' :
+              difficulty === 'HARD' ? 'border-amber-500/40 text-amber-400 bg-amber-500/10' :
+              'border-purple-500/40 text-purple-400 bg-purple-500/10';
             const stepSegs = 10;
             const filledSegs = Math.min(ep.num_steps, stepSegs);
             return (
@@ -146,7 +146,7 @@ const FreshFromGym: React.FC = () => {
               key={ep.episode_id}
               whileHover={{ y: -4 }}
               onClick={() => navigate(`/replay/${ep.episode_id}`)}
-              className="cursor-pointer rounded-2xl border border-[var(--color-border)] bg-white hover:border-[var(--color-amber)] hover:shadow-xl transition-all group relative overflow-hidden flex flex-col"
+              className="cursor-pointer rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] hover:border-[var(--color-amber)] hover:shadow-xl transition-all group relative overflow-hidden flex flex-col"
             >
               {/* Status accent bar */}
               <div className={cn("h-1 w-full", ep.passed ? "bg-gradient-to-r from-green-500 to-emerald-400" : "bg-gradient-to-r from-red-500 to-rose-400")} />
@@ -158,7 +158,7 @@ const FreshFromGym: React.FC = () => {
                   </span>
                   <span className={cn(
                     "text-[10px] font-mono px-2.5 py-1 rounded-full border font-bold tracking-wider",
-                    ep.passed ? "border-green-500 text-green-600 bg-green-50" : "border-red-500 text-red-600 bg-red-50"
+                    ep.passed ? "border-green-500 text-green-400 bg-green-500/10" : "border-red-500 text-red-400 bg-red-500/10"
                   )}>
                     {ep.passed ? "● PASSED" : "● FAILED"}
                   </span>
@@ -223,12 +223,12 @@ const HowItWorks: React.FC = () => {
   ];
 
   return (
-    <section id="how-it-works" className="relative px-6 py-32 border-t border-[var(--color-border)] bg-white overflow-hidden">
+    <section id="how-it-works" className="relative px-6 py-32 border-t border-[var(--color-border)] bg-[var(--color-panel)] overflow-hidden">
       {/* Dot-grid texture */}
       <div
         className="absolute inset-0 opacity-30 pointer-events-none"
         style={{
-          backgroundImage: `radial-gradient(circle, #d4d4d8 1px, transparent 1px)`,
+          backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.14) 1px, transparent 1px)`,
           backgroundSize: '24px 24px',
           maskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 100%)',
         }}
@@ -302,7 +302,7 @@ const ModelComparison: React.FC = () => {
   const loading = rows === null;
 
   return (
-    <section id="models" className="px-6 py-32 bg-white border-t border-[var(--color-border)]">
+    <section id="models" className="px-6 py-32 bg-[var(--color-panel)] border-t border-[var(--color-border)]">
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-4">
@@ -330,7 +330,7 @@ const ModelComparison: React.FC = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={blackBoxSpring}
-                className="w-full py-16 border-y border-[var(--color-border)] text-center bg-white"
+                className="w-full py-16 border-y border-[var(--color-border)] text-center bg-[var(--color-panel)]"
               >
                 <h3 className="text-6xl md:text-9xl font-display font-bold tracking-tighter text-[var(--color-ink)] leading-none">
                   Ultra is fastest. <br />
@@ -369,7 +369,7 @@ const ModelComparison: React.FC = () => {
                       <th className="text-right py-4 pr-4">Judge</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white">
+                  <tbody className="bg-[var(--color-panel)]">
                     {rows.map((r, i) => {
                       const isUltra = r.model.toLowerCase() === 'ultra';
                       return (
@@ -419,7 +419,7 @@ const DatasetSection: React.FC = () => {
   };
 
   return (
-    <section id="dataset" className="px-6 py-32 border-t border-[var(--color-border)] bg-white">
+    <section id="dataset" className="px-6 py-32 border-t border-[var(--color-border)] bg-[var(--color-panel)]">
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-5">
@@ -481,7 +481,7 @@ const DatasetSection: React.FC = () => {
           onClick={() => setSheetOpen(false)}
         >
           <div
-            className="w-full max-w-lg rounded-2xl border border-[var(--color-border)] bg-white p-8 shadow-2xl"
+            className="w-full max-w-lg rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-8 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
