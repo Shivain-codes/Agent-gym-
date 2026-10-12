@@ -24,10 +24,12 @@ from dataclasses import dataclass, field
 from typing import Any
 
 # Friendly alias -> Token Factory model id.
+# Friendly alias -> model id. IDs verified against
+# https://integrate.api.nvidia.com/v1/models (2026-10-13).
 MODEL_REGISTRY: dict[str, str] = {
-    "nano": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "nano": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
     "super": "nvidia/nemotron-3-super-120b-a12b",
-    "ultra": "nvidia/Nemotron-3-Ultra-550b-a55b",
+    "ultra": "nvidia/nemotron-3-ultra-550b-a55b",
 }
 DEFAULT_MODEL = "nano"
 DEFAULT_BASE_URL = "https://api.tokenfactory.nebius.com/v1/"
@@ -84,8 +86,12 @@ class TokenFactoryClient:
         self.max_tokens = max_tokens
         self.temperature = temperature
         self._client = OpenAI(
-            api_key=api_key or os.environ.get("NEBIUS_API_KEY"),
-            base_url=base_url or os.environ.get("NEBIUS_BASE_URL", DEFAULT_BASE_URL),
+            api_key=api_key
+            or os.environ.get("NEBIUS_API_KEY")
+            or os.environ.get("NVIDIA_API_KEY"),
+            base_url=base_url
+            or os.environ.get("NEBIUS_BASE_URL")
+            or os.environ.get("NVIDIA_BASE_URL", DEFAULT_BASE_URL),
         )
 
     @property

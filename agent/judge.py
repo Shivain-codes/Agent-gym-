@@ -128,7 +128,9 @@ class Judge:
         self.force_stub = force_stub
 
     def _has_key(self) -> bool:
-        return bool(os.environ.get("NEBIUS_API_KEY"))
+        return bool(
+            os.environ.get("NEBIUS_API_KEY") or os.environ.get("NVIDIA_API_KEY")
+        )
 
     def score(
         self,
@@ -144,8 +146,10 @@ class Judge:
             from openai import OpenAI
 
             client = OpenAI(
-                api_key=os.environ.get("NEBIUS_API_KEY"),
-                base_url=os.environ.get("NEBIUS_BASE_URL", DEFAULT_BASE_URL),
+                api_key=os.environ.get("NEBIUS_API_KEY")
+                or os.environ.get("NVIDIA_API_KEY"),
+                base_url=os.environ.get("NEBIUS_BASE_URL")
+                or os.environ.get("NVIDIA_BASE_URL", DEFAULT_BASE_URL),
             )
             resp = client.chat.completions.create(
                 model=self.model_id,
