@@ -11,14 +11,16 @@ Routes:
 from __future__ import annotations
 
 import threading
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 load_dotenv()  # make NEBIUS_API_KEY available to the agent loop
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, APIRouter, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from agent import AgentRunner, make_episode_id
 from api import storage
@@ -37,6 +39,10 @@ _DIFFICULTY_LABEL = {1: "easy", 2: "medium", 3: "hard", 4: "expert"}
 
 app = FastAPI(title="AgentGym API", version="0.1.0")
 
+# All API routes live under /api/* so they never collide with frontend pages
+# (/tasks and /leaderboard exist as both API endpoints and SPA routes).
+router = APIRouter()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -48,12 +54,12 @@ app.add_middleware(
 _loader = TaskLoader("tasks")
 
 
-@app.get("/health")
+@router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/tasks", response_model=list[TaskOut])
+@router.get("/tasks", response_model=list[TaskOut])
 def list_tasks() -> list[TaskOut]:
     """List available tasks with difficulty badges."""
     return [
@@ -95,7 +101,7 @@ def _run_episode_bg(
         storage.update_run(episode_id, status="failed", error=str(exc))
 
 
-@app.post("/episodes/run", response_model=RunEpisodeResponse)
+@router.post("/episodes/run", response_model=RunEpisodeResponse)
 def run_episode(req: RunEpisodeRequest) -> RunEpisodeResponse:
     """Kick off an agent episode in the background and return its id."""
     try:
@@ -127,7 +133,7 @@ def run_episode(req: RunEpisodeRequest) -> RunEpisodeResponse:
     )
 
 
-@app.get("/episodes", response_model=list[EpisodeSummary])
+@router.get("/episodes", response_model=list[EpisodeSummary])
 def list_episodes() -> list[EpisodeSummary]:
     """List all episodes (newest first), without the step payload."""
     rows = [
@@ -148,7 +154,7 @@ def list_episodes() -> list[EpisodeSummary]:
     return rows
 
 
-@app.get("/episodes/battle")
+@router.get("/episodes/battle")
 def battle_mode(task_id: str, model_a: str, model_b: str):
     """Compare the latest completed episodes for two models on the same task."""
     all_eps = storage.list_episode_summaries()
@@ -182,14 +188,14 @@ def battle_mode(task_id: str, model_a: str, model_b: str):
     }
 
 
-@app.get("/export/dataset")
+@router.get("/export/dataset")
 def export_dataset():
     """Bundle all trajectories into a single JSONL and generate a datasheet."""
     bundle_path, _ = _generate_export_files()
     return FileResponse(bundle_path, filename="agentgym_dataset.jsonl")
 
 
-@app.get("/export/datasheet")
+@router.get("/export/datasheet")
 def export_datasheet():
     """Return the generated dataset datasheet as a text file."""
     _, datasheet_path = _generate_export_files()
@@ -230,7 +236,7 @@ def _generate_export_files():
     return bundle_path, datasheet_path
 
 
-@app.get("/fixtures", response_model=list[EpisodeSummary])
+@router.get("/fixtures", response_model=list[EpisodeSummary])
 def list_fixtures() -> list[EpisodeSummary]:
     """List the golden demo fixtures."""
     out = []
@@ -253,7 +259,7 @@ def list_fixtures() -> list[EpisodeSummary]:
     return out
 
 
-@app.get("/episodes/{episode_id}", response_model=EpisodeOut)
+@router.get("/episodes/{episode_id}", response_model=EpisodeOut)
 def get_episode(episode_id: str) -> EpisodeOut:
     """Fetch a trajectory summary (meta + steps + result collapsed)."""
     summary = storage.summarize_episode(episode_id)
@@ -287,7 +293,7 @@ def get_episode(episode_id: str) -> EpisodeOut:
     )
 
 
-@app.get("/episodes/{episode_id}/stream")
+@router.get("/episodes/{episode_id}/stream")
 def stream_episode(episode_id: str) -> StreamingResponse:
     """Stream the raw trajectory JSONL (one event per line)."""
     if storage.summarize_episode(episode_id) is None:
@@ -310,7 +316,7 @@ def _avg(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
 
 
-@app.get("/leaderboard", response_model=list[LeaderboardRow])
+@router.get("/leaderboard", response_model=list[LeaderboardRow])
 def leaderboard() -> list[LeaderboardRow]:
     """Aggregate completed episodes per model: pass rate, steps, judge score."""
     episodes = _completed_episodes()
@@ -342,7 +348,7 @@ def leaderboard() -> list[LeaderboardRow]:
     return rows
 
 
-@app.get("/leaderboard/matrix", response_model=list[TaskLeaderboardCell])
+@router.get("/leaderboard/matrix", response_model=list[TaskLeaderboardCell])
 def leaderboard_matrix() -> list[TaskLeaderboardCell]:
     """Models x tasks matrix: pass rate / avg steps / avg judge per cell."""
     episodes = _completed_episodes()
@@ -371,7 +377,7 @@ def leaderboard_matrix() -> list[TaskLeaderboardCell]:
     return out
 
 
-@app.get("/episodes/{episode_id}/file/{step_index}/{path:path}")
+@router.get("/episodes/{episode_id}/file/{step_index}/{path:path}")
 def get_episode_file(episode_id: str, step_index: int, path: str) -> str | None:
     """Retrieve the content of a specific file at a specific step index."""
     content = storage.get_file_at_step(episode_id, step_index, path)
@@ -380,7 +386,38 @@ def get_episode_file(episode_id: str, step_index: int, path: str) -> str | None:
     return content
 
 
-@app.get("/episodes/{episode_id}/diagnostics")
+@router.get("/episodes/{episode_id}/diagnostics")
 def get_episode_diagnostics(episode_id: str):
     """Retrieve failure pattern analysis for an episode."""
     return storage.analyze_failure_patterns(episode_id)
+
+
+# ---- Single-service deploy ----
+# API under /api/*, dashboard static files at /, SPA fallback for frontend
+# routes. Order matters: API first, then SPA pages, then static files last.
+app.include_router(router, prefix="/api")
+
+_dist_dir = Path(__file__).resolve().parent.parent / "dashboard" / "dist"
+
+# Frontend SPA routes (react-router). Serve index.html for browser navigations
+# so deep links and refreshes work on the deployed single URL.
+_SPA_PAGES = {"leaderboard", "tasks", "replay", "battle"}
+
+
+@app.get("/{page}", include_in_schema=False)
+@app.get("/{page}/{subpath:path}", include_in_schema=False)
+async def _spa_fallback(page: str, request: Request, subpath: str = ""):
+    if _dist_dir.is_dir():
+        # Real static asset (js/css/images)? serve it directly.
+        candidate = _dist_dir / page / subpath if subpath else _dist_dir / page
+        if candidate.is_file():
+            return FileResponse(candidate)
+        # Frontend page navigation? serve the SPA shell.
+        wants_html = "text/html" in request.headers.get("accept", "")
+        if page in _SPA_PAGES and wants_html:
+            return FileResponse(_dist_dir / "index.html")
+    raise HTTPException(status_code=404, detail="Not Found")
+
+
+if _dist_dir.is_dir():
+    app.mount("/", StaticFiles(directory=_dist_dir, html=True), name="dashboard")

@@ -1,7 +1,19 @@
 // API client for the AgentGym backend.
-// Base URL is configurable via VITE_API_BASE; defaults to the local FastAPI.
+// Base URL is configurable via VITE_API_BASE. When unset:
+// - localhost dev (Vite on :5173) -> local FastAPI on :8000
+// - any deployed host -> same origin (backend serves the frontend)
 
-const BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000";
+function defaultBase(): string {
+  if (typeof window !== "undefined") {
+    const h = window.location.hostname;
+    // Deployed single-service: API lives under /api on the same origin.
+    if (h !== "localhost" && h !== "127.0.0.1") return "/api";
+  }
+  // Local dev: Vite on :5173, FastAPI on :8000.
+  return "http://127.0.0.1:8000/api";
+}
+
+const BASE = import.meta.env.VITE_API_BASE ?? defaultBase();
 
 export interface TaskOut {
   id: string;

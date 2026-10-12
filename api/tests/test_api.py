@@ -8,13 +8,13 @@ client = TestClient(app)
 
 
 def test_health():
-    r = client.get("/health")
+    r = client.get("/api/health")
     assert r.status_code == 200
     assert r.json() == {"status": "ok"}
 
 
 def test_tasks_lists_real_tasks():
-    r = client.get("/tasks")
+    r = client.get("/api/tasks")
     assert r.status_code == 200
     tasks = r.json()
     assert len(tasks) >= 25
@@ -28,17 +28,17 @@ def test_tasks_lists_real_tasks():
 
 
 def test_run_unknown_task_404():
-    r = client.post("/episodes/run", json={"task_id": "does-not-exist", "model": "nano"})
+    r = client.post("/api/episodes/run", json={"task_id": "does-not-exist", "model": "nano"})
     assert r.status_code == 404
 
 
 def test_get_unknown_episode_404():
-    r = client.get("/episodes/nope_nano_123")
+    r = client.get("/api/episodes/nope_nano_123")
     assert r.status_code == 404
 
 
 def test_leaderboard_shape():
-    r = client.get("/leaderboard")
+    r = client.get("/api/leaderboard")
     assert r.status_code == 200
     rows = r.json()
     assert isinstance(rows, list)
@@ -49,7 +49,7 @@ def test_leaderboard_shape():
 
 
 def test_leaderboard_matrix_shape():
-    r = client.get("/leaderboard/matrix")
+    r = client.get("/api/leaderboard/matrix")
     assert r.status_code == 200
     cells = r.json()
     assert isinstance(cells, list)
@@ -58,7 +58,7 @@ def test_leaderboard_matrix_shape():
 
 
 def test_fixtures_endpoint():
-    r = client.get("/fixtures")
+    r = client.get("/api/fixtures")
     assert r.status_code == 200
     fixtures = r.json()
     assert isinstance(fixtures, list)
@@ -68,6 +68,6 @@ def test_fixtures_endpoint():
 
 
 def test_episodes_list_shape():
-    r = client.get("/episodes")
+    r = client.get("/api/episodes")
     assert r.status_code == 200
     assert isinstance(r.json(), list)

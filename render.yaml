@@ -1,0 +1,20 @@
+# Render Blueprint — AgentGym (single-service deploy)
+# Backend (FastAPI) serves the API *and* the built Vite dashboard from one URL.
+# No frontend env config needed: same-origin API calls work out of the box.
+#
+# Deploy: push this repo to GitHub, then in Render Dashboard ->
+#   New + -> Blueprint -> connect the repo. Render reads this file.
+# Optional: add NEBIUS_API_KEY as an env var in the dashboard if you want
+# live episode runs; the demo works without it (serves recorded fixtures).
+
+services:
+  - type: web
+    name: agentgym
+    runtime: python
+    plan: free
+    buildCommand: chmod +x render-build.sh && ./render-build.sh
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
