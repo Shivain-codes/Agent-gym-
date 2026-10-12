@@ -192,7 +192,7 @@ export const Hero: React.FC = () => {
             <span className="font-display text-xl font-bold tracking-tighter text-[var(--color-ink)]">AgentGym</span>
           </div>
           <div className="hidden items-center gap-8 md:flex justify-self-center">
-            {['Leaderboard', 'Replay', 'Tasks'].map((item) => (
+            {['Leaderboard', 'Replay', 'Tasks', 'Battle'].map((item) => (
               <a
                 key={item}
                 href={`/${item.toLowerCase()}`}

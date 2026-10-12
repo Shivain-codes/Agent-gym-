@@ -50,7 +50,16 @@ export default function Tasks() {
 
   if (error)
     return <div className="text-[var(--color-fail)] font-mono">Failed to load tasks: {error}</div>;
-  if (!tasks) return <div className="text-[var(--color-body)] font-mono">Loading tasks…</div>;
+  if (!tasks)
+    return (
+      <section className="px-6 py-12 space-y-4">
+        <div className="h-4 w-48 bg-[var(--color-muted-fill)] animate-pulse rounded" />
+        <div className="h-12 w-56 bg-[var(--color-muted-fill)] animate-pulse rounded" />
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="h-24 rounded-sm bg-[var(--color-muted-fill)] animate-pulse" />
+        ))}
+      </section>
+    );
 
   return (
     <motion.section

@@ -17,6 +17,7 @@ export default function EpisodeReplay() {
 function EpisodePicker() {
   const [fixtures, setFixtures] = useState<EpisodeSummary[]>([]);
   const [episodes, setEpisodes] = useState<EpisodeSummary[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,7 +26,8 @@ function EpisodePicker() {
         setFixtures(f);
         setEpisodes(e.filter((x) => x.status === "completed"));
       })
-      .catch((e) => setError(String(e)));
+      .catch((e) => setError(String(e)))
+      .finally(() => setLoading(false));
   }, []);
 
   if (error) return <div className="text-[var(--color-fail)] font-mono">Failed to load: {error}</div>;
@@ -48,30 +50,40 @@ function EpisodePicker() {
         </p>
       </div>
 
-      {fixtures.length > 0 && (
-        <>
-          <h2 className="mb-4 text-sm font-mono uppercase tracking-widest text-[var(--color-amber)]">
-            Golden demo episodes
-          </h2>
-          <div className="mb-12 grid gap-4 sm:grid-cols-3">
-            {fixtures.map((f) => (
-              <EpisodeCard key={f.episode_id} ep={f} golden />
-            ))}
-          </div>
-        </>
-      )}
-
-      <h2 className="mb-4 text-sm font-mono uppercase tracking-widest text-[var(--color-soft-ink)]">All episodes</h2>
-      {episodes.length === 0 ? (
-        <div className="mt-2 rounded-sm border border-dashed border-[var(--color-hairline)] p-8 text-center text-[var(--color-soft-ink)] font-mono">
-          No episodes recorded yet.
-        </div>
-      ) : (
-        <div className="mt-2 grid gap-4 sm:grid-cols-2">
-          {episodes.map((e) => (
-            <EpisodeCard key={e.episode_id} ep={e} />
+      {loading ? (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-28 rounded-sm bg-[var(--color-muted-fill)] animate-pulse" />
           ))}
         </div>
+      ) : (
+        <>
+          {fixtures.length > 0 && (
+            <>
+              <h2 className="mb-4 text-sm font-mono uppercase tracking-widest text-[var(--color-amber)]">
+                Golden demo episodes
+              </h2>
+              <div className="mb-12 grid gap-4 sm:grid-cols-3">
+                {fixtures.map((f) => (
+                  <EpisodeCard key={f.episode_id} ep={f} golden />
+                ))}
+              </div>
+            </>
+          )}
+
+          <h2 className="mb-4 text-sm font-mono uppercase tracking-widest text-[var(--color-soft-ink)]">All episodes</h2>
+          {episodes.length === 0 ? (
+            <div className="mt-2 rounded-sm border border-dashed border-[var(--color-hairline)] p-8 text-center text-[var(--color-soft-ink)] font-mono">
+              No episodes recorded yet.
+            </div>
+          ) : (
+            <div className="mt-2 grid gap-4 sm:grid-cols-2">
+              {episodes.map((e) => (
+                <EpisodeCard key={e.episode_id} ep={e} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </motion.section>
   );

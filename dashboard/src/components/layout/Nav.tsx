@@ -26,7 +26,7 @@ export const Nav: React.FC = () => {
 
         {/* Links center */}
         <div className="hidden items-center gap-8 md:flex justify-self-center">
-          {['Leaderboard', 'Replay', 'Tasks'].map((item) => (
+          {['Leaderboard', 'Replay', 'Tasks', 'Battle'].map((item) => (
             <Link
               key={item}
               to={`/${item.toLowerCase()}`}

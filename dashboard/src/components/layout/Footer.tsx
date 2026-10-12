@@ -27,7 +27,7 @@ export const Footer: React.FC = () => {
         <div>
           <h4 className="mb-4 font-mono text-xs font-bold uppercase tracking-widest text-[var(--color-ink)]">Data</h4>
           <ul className="space-y-2 text-xs">
-            <li><a href="https://nebius.com" target="_blank" rel="noreferrer" className="hover:text-[var(--color-amber)]">Nebius Token Factory</a></li>
+            <li><a href="https://tokenfactory.nebius.com" target="_blank" rel="noreferrer" className="hover:text-[var(--color-amber)]">Nebius Token Factory</a></li>
             <li><a href="https://build.nvidia.com" target="_blank" rel="noreferrer" className="hover:text-[var(--color-amber)]">Nemotron Nano · Super · Ultra</a></li>
             <li><a href="https://jsonlines.org" target="_blank" rel="noreferrer" className="hover:text-[var(--color-amber)]">JSONL Format</a></li>
           </ul>
