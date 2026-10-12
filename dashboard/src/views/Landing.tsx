@@ -299,7 +299,7 @@ const ComparisonHeadline: React.FC<{ rows: LeaderboardRow[] }> = ({ rows }) => {
       <>
         <h3 className="text-6xl md:text-9xl font-display font-bold tracking-tighter text-[var(--color-ink)] leading-none">
           {cap(r.model)} holds <br />
-          <span className="text-[var(--color-body)]">the board.</span>
+          <span className="text-[var(--color-body)]">the <span className="serif-accent">board.</span></span>
         </h3>
         <div className="mt-8 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-accent-ink)]">
           <span>{r.avg_steps.toFixed(1)} steps</span>
@@ -317,7 +317,7 @@ const ComparisonHeadline: React.FC<{ rows: LeaderboardRow[] }> = ({ rows }) => {
       <h3 className="text-6xl md:text-9xl font-display font-bold tracking-tighter text-[var(--color-ink)] leading-none">
         {cap(fastest.model)} is fastest. <br />
         <span className="text-[var(--color-body)]">
-          {split ? 'The judge disagrees.' : 'The judge agrees.'}
+          {split ? <>The judge <span className="serif-accent">disagrees.</span></> : <>The judge <span className="serif-accent">agrees.</span></>}
         </span>
       </h3>
       <div className="mt-8 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-accent-ink)]">

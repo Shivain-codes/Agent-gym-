@@ -101,7 +101,7 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
         transition={{ ...blackBoxSpring, delay: 0.15 }}
         className="mx-auto max-w-5xl"
       >
-        <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-ink)] p-8 md:p-10">
+        <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-8 md:p-10">
           <div
             className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full opacity-20"
             style={{ background: "radial-gradient(circle, #76B900, transparent 70%)" }}
@@ -109,7 +109,7 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
             The takeaway
           </p>
-          <p className="mt-3 font-display text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <p className="mt-3 font-display text-3xl font-bold tracking-tight text-[var(--color-ink)] md:text-4xl">
             {cap(r.model)} passes everything.{" "}
             <span className="text-[var(--color-body)]">Add a rival to see the real story.</span>
           </p>
@@ -142,7 +142,7 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
       transition={{ ...blackBoxSpring, delay: 0.15 }}
       className="mx-auto max-w-5xl"
     >
-      <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-ink)] p-8 md:p-10">
+      <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-8 md:p-10">
         <div
           className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full opacity-20"
           style={{ background: "radial-gradient(circle, #76B900, transparent 70%)" }}
@@ -150,9 +150,9 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
           The takeaway
         </p>
-        <p className="mt-3 font-display text-3xl font-bold tracking-tight text-white md:text-4xl">
+        <p className="mt-3 font-display text-3xl font-bold tracking-tight text-[var(--color-ink)] md:text-4xl">
           {cap(insight.fastest.model)} is fastest.{" "}
-          <span className="text-[var(--color-body)]">The judge disagrees.</span>
+          <span className="text-[var(--color-body)]">The judge <span className="serif-accent">disagrees.</span></span>
         </p>
         <p className="mt-3 max-w-2xl font-mono text-xs leading-relaxed text-[var(--color-body)]">
           {cap(insight.fastest.model)} averages {fmt(insight.fastest.avg_steps)} steps per task —

@@ -224,7 +224,7 @@ function BattleResult({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...blackBoxSpring, delay: 0.1 }}
-        className="relative mb-12 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-ink)] p-8"
+        className="relative mb-12 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-8"
       >
         <div
           className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full opacity-20"
@@ -233,7 +233,7 @@ function BattleResult({
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
           The verdict
         </p>
-        <p className="mt-3 font-display text-3xl font-bold tracking-tight text-white">
+        <p className="mt-3 font-display text-3xl font-bold tracking-tight text-[var(--color-ink)]">
           {cap(faster)} is faster
           {stepDiff > 0 && <span className="text-[var(--color-body)]"> by {stepDiff} step{stepDiff === 1 ? "" : "s"}.</span>}
           {split ? (
