@@ -16,16 +16,16 @@ export const Nav: React.FC = () => {
       transition={blackBoxSpring}
       className="sticky top-0 z-50 w-full border-b border-[var(--color-hairline)] bg-[var(--color-bg)] px-6 py-4"
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between h-18">
+      <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center h-18">
         {/* Wordmark left */}
-        <Link to="/" className="flex items-center gap-3 group">
+        <Link to="/" className="flex items-center gap-3 group justify-self-start">
           <span className="font-display text-xl font-bold tracking-tighter text-[var(--color-ink)] transition-colors group-hover:text-[var(--color-amber)]">
             AgentGym
           </span>
         </Link>
 
         {/* Links center */}
-        <div className="hidden items-center gap-8 md:flex absolute left-1/2 -translate-x-1/2">
+        <div className="hidden items-center gap-8 md:flex justify-self-center">
           {['Leaderboard', 'Replay', 'Tasks'].map((item) => (
             <Link
               key={item}
@@ -39,7 +39,7 @@ export const Nav: React.FC = () => {
         </div>
 
         {/* Black pill GitHub right */}
-        <div className="flex items-center justify-end w-1/3">
+        <div className="flex items-center justify-self-end">
           <a
             href="https://github.com/Shivain-codes/Agent-gym-"
             target="_blank"
