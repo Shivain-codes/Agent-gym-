@@ -223,8 +223,19 @@ const HowItWorks: React.FC = () => {
   ];
 
   return (
-    <section id="how-it-works" className="px-6 py-32 border-t border-[var(--color-border)] bg-white">
-      <div className="mx-auto max-w-7xl">
+    <section id="how-it-works" className="relative px-6 py-32 border-t border-[var(--color-border)] bg-white overflow-hidden">
+      {/* Dot-grid texture */}
+      <div
+        className="absolute inset-0 opacity-30 pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle, #d4d4d8 1px, transparent 1px)`,
+          backgroundSize: '24px 24px',
+          maskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 100%)',
+        }}
+      />
+      {/* Subtle green glow */}
+      <div className="absolute top-1/3 -left-40 h-[500px] w-[500px] bg-[var(--color-amber)]/8 blur-[150px] rounded-full opacity-60 pointer-events-none" />
+      <div className="relative mx-auto max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-4">
             <motion.div
@@ -235,7 +246,6 @@ const HowItWorks: React.FC = () => {
               className="sticky top-32"
             >
               <div className="flex items-baseline gap-4 mb-6">
-                <span className="font-mono text-6xl font-bold text-[var(--color-border)] opacity-50">01</span>
                 <h2 className="font-display text-4xl font-bold tracking-tighter text-[var(--color-ink)] uppercase">How it works</h2>
               </div>
               <p className="text-lg text-[var(--color-body)] leading-relaxed max-w-md">
