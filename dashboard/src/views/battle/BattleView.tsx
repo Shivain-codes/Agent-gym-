@@ -413,7 +413,7 @@ function LiveRow({
   const steps = ep?.steps?.length ?? 0;
   const done = ep?.status === "completed";
   const status = done
-    ? `done · ${steps} steps${ep.passed ? " · passed" : " · failed"}`
+    ? `done · ${steps} steps${ep.passed ? " · solved" : " · not solved"}`
     : waiting
       ? "queued"
       : active
