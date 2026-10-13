@@ -253,37 +253,38 @@ const HowItWorks: React.FC = () => {
 const ComparisonHeadline: React.FC<{ rows: LeaderboardRow[] }> = ({ rows }) => {
   const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   if (rows.length === 0) return null;
-  if (rows.length === 1) {
-    const r = rows[0];
-    return (
-      <>
-        <h3 className="text-6xl md:text-9xl font-display font-semibold tracking-tighter text-[var(--color-ink)] leading-none">
-          {cap(r.model)} holds <br />
-          <span className="text-[var(--color-body)]">the board.</span>
-        </h3>
-        <div className="mt-8 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-accent-ink)]">
-          <span>{r.avg_steps.toFixed(1)} steps</span>
-          <span className="text-[var(--color-border)]">/</span>
-          <span>{r.avg_judge_score?.toFixed(1) ?? '—'} judge</span>
-        </div>
-      </>
-    );
-  }
-  const fastest = [...rows].sort((a, b) => a.avg_steps - b.avg_steps)[0];
-  const bestJudge = [...rows].sort((a, b) => (b.avg_judge_score ?? 0) - (a.avg_judge_score ?? 0))[0];
-  const split = fastest.model !== bestJudge.model;
+  const line =
+    rows.length === 1
+      ? `${cap(rows[0].model)} holds the board.`
+      : (() => {
+          const fastest = [...rows].sort((a, b) => a.avg_steps - b.avg_steps)[0];
+          const bestJudge = [...rows].sort(
+            (a, b) => (b.avg_judge_score ?? 0) - (a.avg_judge_score ?? 0)
+          )[0];
+          const split = fastest.model !== bestJudge.model;
+          return `${cap(fastest.model)} is fastest. ${split ? 'The judge disagrees.' : 'The judge agrees.'}`;
+        })();
+  const stat =
+    rows.length === 1
+      ? { steps: rows[0].avg_steps, judge: rows[0].avg_judge_score, who: null as string | null }
+      : (() => {
+          const fastest = [...rows].sort((a, b) => a.avg_steps - b.avg_steps)[0];
+          const bestJudge = [...rows].sort(
+            (a, b) => (b.avg_judge_score ?? 0) - (a.avg_judge_score ?? 0)
+          )[0];
+          return { steps: fastest.avg_steps, judge: bestJudge.avg_judge_score, who: cap(bestJudge.model) };
+        })();
   return (
     <>
-      <h3 className="text-6xl md:text-9xl font-display font-semibold tracking-tighter text-[var(--color-ink)] leading-none">
-        {cap(fastest.model)} is fastest. <br />
-        <span className="text-[var(--color-body)]">
-          {split ? 'The judge disagrees.' : 'The judge agrees.'}
-        </span>
+      <h3 className="font-display text-3xl md:text-5xl font-semibold tracking-tighter text-[var(--color-ink)] leading-tight">
+        {line}
       </h3>
-      <div className="mt-8 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-accent-ink)]">
-        <span>{fastest.avg_steps.toFixed(1)} steps</span>
+      <div className="mt-6 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-accent-ink)]">
+        <span>{stat.steps.toFixed(1)} steps</span>
         <span className="text-[var(--color-border)]">/</span>
-        <span>{bestJudge.avg_judge_score?.toFixed(1) ?? '—'} judge · {cap(bestJudge.model)}</span>
+        <span>
+          {stat.judge?.toFixed(1) ?? '—'} judge{stat.who ? ` · ${stat.who}` : ''}
+        </span>
       </div>
     </>
   );
@@ -337,7 +338,7 @@ const ModelComparison: React.FC = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={revealSpring}
-                className="w-full py-16 border-y border-[var(--color-border)] text-center bg-[var(--color-panel)]"
+                className="w-full py-10 md:py-12 border-y border-[var(--color-border)] text-center bg-[var(--color-panel)]"
               >
                 {loading ? (
                   <div className="h-10 w-64 bg-[var(--color-muted-fill)] animate-pulse rounded mx-auto" />
