@@ -30,7 +30,7 @@ const CountUp = ({ value, label }: { value: number | string, label: string }) =>
 
   if (!isLoaded) {
     return (
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex items-baseline gap-3">
         <div className="h-6 w-16 bg-[var(--color-muted-fill)] animate-pulse" />
         <div className="h-3 w-20 bg-[var(--color-muted-fill)] animate-pulse" />
       </div>
@@ -38,11 +38,11 @@ const CountUp = ({ value, label }: { value: number | string, label: string }) =>
   }
 
   return (
-    <div className="flex flex-col items-center gap-1">
-      <motion.span className="text-3xl font-display font-semibold text-[var(--color-ink)] tracking-tighter">
+    <div className="flex items-baseline gap-3">
+      <motion.span className="text-xl font-display font-semibold text-[var(--color-ink)] tracking-tight">
         {display}
       </motion.span>
-      <span className="text-[9px] font-mono uppercase tracking-widest text-[var(--color-micro)]">{label}</span>
+      <span className="text-[10px] font-mono text-[var(--color-micro)]">{label}</span>
     </div>
   );
 };
@@ -68,8 +68,8 @@ const StatsStrip: React.FC = () => {
   if (!stats) return <div className="w-full border-y border-[var(--color-border)] py-12 flex justify-around items-center opacity-0" />;
 
   return (
-    <div className="w-full border-y border-[var(--color-border)] py-12">
-      <div className="mx-auto max-w-7xl px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
+    <div className="w-full border-y border-[var(--color-border)] py-8">
+      <div className="mx-auto max-w-7xl px-6 flex flex-wrap items-baseline gap-x-12 gap-y-4">
         <CountUp value={stats.episodes} label="Recorded Episodes" />
         <CountUp value={stats.models} label={stats.models === 1 ? "Nemotron Model" : "Nemotron Models"} />
         <CountUp value={stats.judge} label="Avg Judge Score" />

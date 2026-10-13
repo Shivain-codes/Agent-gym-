@@ -5,7 +5,6 @@ import Tasks from "./views/Tasks";
 import { Landing } from "./views/Landing";
 import { Footer } from "./components/layout/Footer";
 import { Nav } from "./components/layout/Nav";
-import { ParticleField } from "./components/effects/ParticleField";
 import BattleView from "./views/battle/BattleView";
 
 export default function App() {
@@ -15,7 +14,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-ink)] antialiased">
-      <ParticleField />
       <div className="relative z-10">
         {showNav && <Nav />}
         <main>
