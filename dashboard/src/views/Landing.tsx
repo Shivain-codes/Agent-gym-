@@ -5,7 +5,8 @@ import { Hero } from '../components/landing/Hero';
 import { MiniReplay } from '../components/landing/MiniReplay';
 import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { Bug, Terminal, History } from 'lucide-react';
+import { Bug, Terminal, History, ArrowRight } from 'lucide-react';
+import { EditorialList } from '../components/ui/editorial-list';
 
 // Softer spring for scroll-triggered reveals — settles without judder
 const revealSpring = {
@@ -83,9 +84,9 @@ const FreshFromGym: React.FC = () => {
             Updated: Just Now
           </div>
         </div>
-        <div className="border-t border-[var(--color-border)]">
-          {episodes === null ? (
-            [0, 1, 2].map((i) => (
+        {episodes === null ? (
+          <div className="border-t border-[var(--color-border)]">
+            {[0, 1, 2].map((i) => (
               <div key={i} className="border-b border-[var(--color-border)] py-8 flex items-baseline gap-8">
                 <div className="h-4 w-8 shrink-0 bg-[var(--color-muted-fill)] animate-pulse rounded" />
                 <div className="flex-1">
@@ -93,53 +94,55 @@ const FreshFromGym: React.FC = () => {
                   <div className="h-3 w-1/3 bg-[var(--color-muted-fill)] animate-pulse rounded" />
                 </div>
               </div>
-            ))
-          ) : episodes.length === 0 ? (
-            <div className="py-16 text-center font-mono text-sm text-[var(--color-micro)] border-b border-dashed border-[var(--color-border)]">
-              No trajectories recorded yet — run the gym to populate this feed.
-            </div>
-          ) : episodes.map((ep, i) => {
-            const diffMatch = ep.task_id.match(/^(easy|medium|hard|expert)/i);
-            const difficulty = diffMatch ? diffMatch[1] : 'task';
-            return (
-              <motion.div
-                key={ep.episode_id}
-                onClick={() => navigate(`/replay/${ep.episode_id}`)}
-                className="group cursor-pointer border-b border-[var(--color-border)] px-2 md:px-4 -mx-2 md:-mx-4 py-8 md:py-10 flex items-baseline gap-6 md:gap-10 hover:bg-white/[0.015] transition-colors duration-200"
-              >
-                <span className="font-mono text-xs text-[var(--color-micro)] w-8 shrink-0">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display text-2xl md:text-4xl font-semibold tracking-tight text-[var(--color-ink)] group-hover:text-[var(--color-amber)] transition-colors leading-tight">
-                    {getTaskName(ep.task_id)}
-                  </h3>
-                  <p className="font-mono text-[11px] text-[var(--color-micro)] mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+            ))}
+          </div>
+        ) : episodes.length === 0 ? (
+          <div className="py-16 text-center font-mono text-sm text-[var(--color-micro)] border-y border-dashed border-[var(--color-border)]">
+            No trajectories recorded yet — run the gym to populate this feed.
+          </div>
+        ) : (
+          <EditorialList
+            items={episodes.map((ep, i) => {
+              const diffMatch = ep.task_id.match(/^(easy|medium|hard|expert)/i);
+              const difficulty = diffMatch ? diffMatch[1] : 'task';
+              const prompt = getTaskPrompt(ep.task_id);
+              return {
+                id: ep.episode_id,
+                index: String(i + 1).padStart(2, '0'),
+                title: getTaskName(ep.task_id),
+                descriptor: (
+                  <span className={ep.passed ? 'text-[var(--color-pass)]' : 'text-[var(--color-fail)]'}>
+                    {ep.passed ? '\u25cf solved' : '\u25cf not solved'}
+                  </span>
+                ),
+                meta: (
+                  <>
                     <span className="uppercase tracking-widest">{difficulty}</span>
-                    <span className="text-[var(--color-border)]">/</span>
+                    <span className="text-[var(--color-border)]">{' / '}</span>
                     <span className="capitalize">{ep.model}</span>
-                    <span className="text-[var(--color-border)]">/</span>
+                    <span className="text-[var(--color-border)]">{' / '}</span>
                     <span>{ep.num_steps} steps</span>
-                    <span className="text-[var(--color-border)]">/</span>
+                    <span className="text-[var(--color-border)]">{' / '}</span>
                     <span>judge {ep.judge_score != null ? ep.judge_score.toFixed(1) : '—'}</span>
-                    <span className="text-[var(--color-border)]">/</span>
-                    <span className={ep.passed ? 'text-[var(--color-pass)]' : 'text-[var(--color-fail)]'}>
-                      {ep.passed ? '\u25cf solved' : '\u25cf not solved'}
-                    </span>
-                  </p>
-                  {getTaskPrompt(ep.task_id) && (
-                    <p className="font-mono text-[11px] text-[var(--color-micro)] mt-2 truncate opacity-70">
-                      {'// '}{getTaskPrompt(ep.task_id)}
-                    </p>
-                  )}
-                </div>
-                <span className="hidden sm:block shrink-0 font-mono text-sm text-[var(--color-micro)] group-hover:text-[var(--color-amber)] group-hover:translate-x-1 transition-all">
-                  &rarr;
-                </span>
-              </motion.div>
-            );
-          })}
-        </div>
+                  </>
+                ),
+                detail: (
+                  <div className="font-mono text-[11px] leading-relaxed text-[var(--color-micro)]">
+                    {prompt && <p className="opacity-70">{'// '}{prompt}</p>}
+                    <p className="mt-2">episode {ep.episode_id}</p>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/replay/${ep.episode_id}`)}
+                      className="mt-3 inline-flex items-center gap-1.5 text-[var(--color-ink)] hover:text-[var(--color-amber)] transition-colors"
+                    >
+                      Open replay <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ),
+              };
+            })}
+          />
+        )}
       </div>
     </section>
   );
