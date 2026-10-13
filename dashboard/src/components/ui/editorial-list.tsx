@@ -49,7 +49,7 @@ export const EditorialList: React.FC<{
                 {item.index}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block font-display text-2xl font-semibold tracking-tight text-[var(--color-ink)] transition-transform duration-300 ease-out group-hover:translate-x-2 md:text-4xl">
+                <span className="block font-display text-4xl font-semibold leading-tight tracking-tight text-[var(--color-ink)] transition-transform duration-300 ease-out group-hover:translate-x-2 md:text-6xl">
                   {item.title}
                 </span>
                 {item.meta && (
