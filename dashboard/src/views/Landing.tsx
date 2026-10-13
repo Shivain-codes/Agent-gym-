@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { motion, useSpring, useTransform } from 'motion/react';
+import { motion } from 'motion/react';
 import { api, type EpisodeSummary, type TaskOut, type LeaderboardRow } from '../api';
 import { Hero } from '../components/landing/Hero';
 import { MiniReplay } from '../components/landing/MiniReplay';
 import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { Bug, Terminal, History } from 'lucide-react';
 
 // Softer spring for scroll-triggered reveals — settles without judder
 const revealSpring = {
@@ -13,67 +14,26 @@ const revealSpring = {
   damping: 24,
 } as const
 
-const CountUp = ({ value, label }: { value: number | string, label: string }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const spring = useSpring(0, { stiffness: 260, damping: 26 });
-  const display = useTransform(spring, (current) => {
-    if (typeof value === 'string') return value;
-    return Math.round(current).toString();
-  });
-
-  useEffect(() => {
-    setIsLoaded(true);
-    if (typeof value === 'number') {
-      spring.set(value);
-    }
-  }, [value, spring]);
-
-  if (!isLoaded) {
-    return (
-      <div className="flex flex-col items-center gap-1">
-        <div className="h-6 w-16 bg-[var(--color-muted-fill)] animate-pulse" />
-        <div className="h-3 w-20 bg-[var(--color-muted-fill)] animate-pulse" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <motion.span className="text-3xl font-display font-semibold text-[var(--color-ink)] tracking-tighter">
-        {display}
-      </motion.span>
-      <span className="text-[9px] font-mono uppercase tracking-widest text-[var(--color-micro)]">{label}</span>
-    </div>
-  );
-};
-
 const StatsStrip: React.FC = () => {
-  const [stats, setStats] = useState<{ episodes: number, models: number, judge: string, steps: string } | null>(null);
+  const [line, setLine] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([api.episodes(), api.leaderboard()]).then(([episodes, leaderboard]) => {
       const models = new Set(episodes.map(e => e.model)).size;
-      const avgJudge = leaderboard.reduce((acc, row) => acc + (row.avg_judge_score ?? 0), 0) / leaderboard.length;
-      const avgSteps = leaderboard.reduce((acc, row) => acc + row.avg_steps, 0) / leaderboard.length;
-
-      setStats({
-        episodes: episodes.length,
-        models: models,
-        judge: avgJudge.toFixed(2),
-        steps: avgSteps.toFixed(1)
-      });
-    });
+      const avgJudge = leaderboard.reduce((acc, row) => acc + (row.avg_judge_score ?? 0), 0) / Math.max(1, leaderboard.length);
+      const avgSteps = leaderboard.reduce((acc, row) => acc + row.avg_steps, 0) / Math.max(1, leaderboard.length);
+      setLine(
+        `${episodes.length} recorded episodes · ${models} model${models === 1 ? '' : 's'} · ${avgJudge.toFixed(1)} avg judge · ${avgSteps.toFixed(1)} avg steps`
+      );
+    }).catch(() => {});
   }, []);
 
-  if (!stats) return <div className="w-full border-y border-[var(--color-border)] py-12 flex justify-around items-center opacity-0" />;
+  if (!line) return <div className="w-full border-y border-[var(--color-border)] py-5" />;
 
   return (
-    <div className="w-full border-y border-[var(--color-border)] py-12">
-      <div className="mx-auto max-w-7xl px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
-        <CountUp value={stats.episodes} label="Recorded Episodes" />
-        <CountUp value={stats.models} label={stats.models === 1 ? "Nemotron Model" : "Nemotron Models"} />
-        <CountUp value={stats.judge} label="Avg Judge Score" />
-        <CountUp value={stats.steps} label="Avg Steps" />
+    <div className="w-full border-y border-[var(--color-border)] py-5">
+      <div className="mx-auto max-w-7xl px-6">
+        <p className="font-mono text-xs text-[var(--color-micro)]">{line}</p>
       </div>
     </div>
   );
@@ -105,6 +65,10 @@ const FreshFromGym: React.FC = () => {
   }, []);
 
   const getTaskName = (id: string) => tasks.find(t => t.id === id)?.name ?? id.replace(/-/g, ' ');
+  const getTaskPrompt = (id: string) => {
+    const pr = tasks.find(t => t.id === id)?.prompt ?? '';
+    return pr.length > 96 ? pr.slice(0, 96).trimEnd() + '…' : pr;
+  };
 
   return (
     <section id="fresh" className="px-6 py-24 border-t border-[var(--color-border)] scroll-mt-24">
@@ -163,6 +127,11 @@ const FreshFromGym: React.FC = () => {
                       {ep.passed ? '\u25cf solved' : '\u25cf not solved'}
                     </span>
                   </p>
+                  {getTaskPrompt(ep.task_id) && (
+                    <p className="font-mono text-[11px] text-[var(--color-micro)] mt-2 truncate opacity-70">
+                      {'// '}{getTaskPrompt(ep.task_id)}
+                    </p>
+                  )}
                 </div>
                 <span className="hidden sm:block shrink-0 font-mono text-sm text-[var(--color-micro)] group-hover:text-[var(--color-amber)] group-hover:translate-x-1 transition-all">
                   &rarr;
@@ -178,72 +147,29 @@ const FreshFromGym: React.FC = () => {
 
 const HowItWorks: React.FC = () => {
   const steps = [
-    { id: '01', title: 'Feed it broken code', desc: 'Inject a repository with intentional bugs into the gym environment.' },
-    { id: '02', title: 'Agent acts in sandbox', desc: 'The AI agent iterates, edits, and tests code within an isolated container.' },
-    { id: '03', title: 'Trajectory saved', desc: 'Every thought and action is recorded as a flight-recorder trajectory.' },
+    { icon: Bug, title: 'Feed it broken code.', desc: 'A repository with an intentional bug goes into the gym environment. Nothing mocked, nothing staged.' },
+    { icon: Terminal, title: 'The agent works the sandbox.', desc: 'It reads, edits, and runs tests inside an isolated container, one step at a time.' },
+    { icon: History, title: 'Every step is kept.', desc: 'Thoughts, actions, and verdicts are recorded as a replayable trajectory.' },
   ];
 
   return (
-    <section id="how-it-works" className="relative px-6 py-32 border-t border-[var(--color-border)] overflow-hidden">
-      {/* Dot-grid texture */}
-      <div
-        className="absolute inset-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.14) 1px, transparent 1px)`,
-          backgroundSize: '24px 24px',
-          maskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 100%)',
-        }}
-      />
-      {/* Subtle green glow — radial gradient, no blur filter (cheap on scroll) */}
-      <div
-        className="absolute top-1/3 -left-40 h-[500px] w-[500px] rounded-full opacity-60 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(118,185,0,0.08), transparent 65%)' }}
-      />
-      <div className="relative mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          <div className="lg:col-span-4">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={revealSpring}
-              className="sticky top-32"
+    <section id="how-it-works" className="px-6 py-24 border-t border-[var(--color-border)] scroll-mt-24">
+      <div className="mx-auto max-w-7xl">
+        <h2 className="font-display text-4xl font-semibold tracking-tighter text-[var(--color-ink)]">How it works</h2>
+        <p className="mt-4 max-w-md text-base leading-relaxed text-[var(--color-body)]">
+          Broken code goes in. A scored, replayable trajectory comes out.
+        </p>
+        <div className="mt-12 grid md:grid-cols-3 border-t border-l border-[var(--color-border)]">
+          {steps.map((step) => (
+            <div
+              key={step.title}
+              className="border-b border-r border-[var(--color-border)] p-8 transition-colors duration-200 hover:bg-white/[0.015]"
             >
-              <div className="flex items-baseline gap-4 mb-6">
-                <h2 className="font-display text-4xl font-semibold tracking-tighter text-[var(--color-ink)]">How it works</h2>
-              </div>
-              <p className="text-lg text-[var(--color-body)] leading-relaxed max-w-md">
-                Our pipeline transforms broken code into high-fidelity training data through a rigorous, automated loop.
-              </p>
-            </motion.div>
-          </div>
-          <div className="lg:col-span-8 grid gap-0 border-l border-[var(--color-border)] pl-0 lg:pl-12">
-            {steps.map((step, i) => (
-              <motion.div
-                key={step.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{
-                  ...revealSpring,
-                  delay: i * 0.1,
-                }}
-                className="relative group py-16 border-b border-[var(--color-border)] last:border-b-0"
-              >
-                <div className="flex flex-col md:flex-row md:items-start gap-8">
-                  <div className="md:w-1/4">
-                    <div className="font-mono text-5xl font-bold text-[var(--color-border)] group-hover:text-[var(--color-amber)] transition-colors duration-500">
-                      {step.id}
-                    </div>
-                  </div>
-                  <div className="md:w-3/4">
-                    <h3 className="mb-4 font-display text-2xl font-semibold text-[var(--color-ink)]">{step.title}</h3>
-                    <p className="text-sm leading-relaxed text-[var(--color-body)] font-mono">{step.desc}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+              <step.icon size={20} strokeWidth={1.75} className="text-[var(--color-amber)]" />
+              <h3 className="mt-6 font-display text-xl font-semibold tracking-tight text-[var(--color-ink)]">{step.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-[var(--color-body)]">{step.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -316,8 +242,7 @@ const ModelComparison: React.FC = () => {
               transition={revealSpring}
               className="sticky top-32"
             >
-              <div className="flex items-baseline gap-4 mb-6">
-                <span className="font-mono text-6xl font-bold text-[var(--color-border)] opacity-50">02</span>
+              <div className="mb-6">
                 <h2 className="font-display text-4xl font-semibold tracking-tighter text-[var(--color-ink)]">Model comparison</h2>
               </div>
               <p className="text-lg text-[var(--color-body)] leading-relaxed max-w-md">
@@ -427,32 +352,29 @@ const DatasetSection: React.FC = () => {
               className="text-left"
             >
               <div className="flex items-baseline gap-4 mb-6">
-                <span className="font-mono text-6xl font-bold text-[var(--color-border)] opacity-50">03</span>
                 <h2 className="font-display text-4xl font-semibold tracking-tighter text-[var(--color-ink)]">The flight data archive</h2>
               </div>
               <p className="text-lg text-[var(--color-body)] leading-relaxed mb-12 max-w-md">
                 Our dataset provides high-fidelity trajectories of AI agents solving real-world coding tasks.
                 Each entry contains a full sequence of thoughts, tool calls, and environment responses.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <motion.a
+              <p className="font-mono text-sm leading-relaxed text-[var(--color-body)]">
+                Every trajectory exports as JSONL.{' '}
+                <a
                   href={api.exportDatasetUrl()}
                   download
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="rounded-sm bg-[var(--color-amber)] px-6 py-2 text-xs font-mono font-bold text-[var(--color-bg)] hover:opacity-90 transition-opacity"
+                  className="text-[var(--color-ink)] underline underline-offset-4 transition-colors hover:text-[var(--color-amber)]"
                 >
-                  EXPORT JSONL
-                </motion.a>
-                <motion.button
+                  Get the dataset →
+                </a>
+                <span className="text-[var(--color-border)]">{' · '}</span>
+                <button
                   onClick={openDatasheet}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="rounded-sm border border-[var(--color-border)] px-6 py-2 text-xs font-mono text-[var(--color-ink)] hover:bg-[var(--color-border)] transition-colors"
+                  className="text-[var(--color-ink)] underline underline-offset-4 transition-colors hover:text-[var(--color-amber)]"
                 >
-                  READ DATASHEET
-                </motion.button>
-              </div>
+                  Read the datasheet →
+                </button>
+              </p>
             </motion.div>
           </div>
           <div className="lg:col-span-7 relative">
@@ -465,10 +387,7 @@ const DatasetSection: React.FC = () => {
             >
               <MiniReplay />
             </motion.div>
-            <div
-              className="absolute -top-20 -right-20 w-64 h-64 rounded-full pointer-events-none"
-              style={{ background: 'radial-gradient(circle, rgba(118,185,0,0.10), transparent 65%)' }}
-            />
+
           </div>
         </div>
       </div>

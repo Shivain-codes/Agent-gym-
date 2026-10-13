@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowDown } from 'lucide-react';
 import { api } from '../../api';
 import { LiveTerminal } from './LiveTerminal';
 import { TelemetryTicker } from './TelemetryTicker';
@@ -33,24 +34,7 @@ export const Hero: React.FC = () => {
   }, []);
 
   return (
-    <section className="relative overflow-hidden px-6 pt-6 md:px-12 md:pt-8">
-      {/* Single ambient glow — the only decoration */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-0 h-[700px] w-[1100px] -translate-x-1/2 -translate-y-1/3 rounded-full opacity-15"
-        style={{ background: 'radial-gradient(ellipse, rgba(118,185,0,0.28), transparent 65%)' }}
-      />
-      {/* Fine grid texture */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-[0.35]"
-        style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
-          backgroundSize: '72px 72px',
-          maskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black 20%, transparent 75%)',
-        }}
-      />
-
+    <section className="relative overflow-hidden px-6 pt-6 md:px-12 md:pt-8 min-h-[80vh]">
       <div className="relative mx-auto max-w-7xl">
         {/* NAV */}
         <nav className="grid h-18 grid-cols-[1fr_auto_1fr] items-center border-b border-[var(--color-hairline)]">
@@ -83,21 +67,20 @@ export const Hero: React.FC = () => {
         </nav>
 
         {/* HEADLINE — kinetic, staggered line reveals */}
-        <div className="mt-16 text-center md:mt-24">
+        <div className="mt-16 md:mt-24 max-w-5xl">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.05 }}
-            className="mb-8 flex items-center justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[var(--color-micro)]"
+            className="mb-8 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[var(--color-micro)]"
           >
             <span className="h-px w-8 bg-[var(--color-amber)]" />
             Training gym for coding agents
-            <span className="h-px w-8 bg-[var(--color-amber)]" />
           </motion.div>
 
           <h1
             className="font-display font-semibold leading-[0.95] tracking-tighter text-[var(--color-ink)]"
-            style={{ fontSize: 'clamp(52px, 9vw, 148px)' }}
+            style={{ fontSize: 'clamp(40px, 6vw, 84px)' }}
           >
             {['Watch AI', 'learn to code.'].map((line, i) => (
               <span key={line} className="block overflow-hidden pb-1">
@@ -122,7 +105,7 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...blackBoxSpring, delay: 0.55 }}
-            className="mx-auto mt-8 max-w-xl font-mono text-sm leading-relaxed text-[var(--color-body)]"
+            className="mt-8 max-w-xl font-mono text-sm leading-relaxed text-[var(--color-body)]"
           >
             <span className="text-[var(--color-soft-ink)]">Broken repo</span>
             <span className="mx-2 text-[var(--color-amber)]">→</span>
@@ -136,13 +119,13 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...blackBoxSpring, delay: 0.7 }}
-            className="mt-10 flex flex-wrap items-center justify-center gap-5"
+            className="mt-10 flex flex-wrap items-center gap-5"
           >
             <button
               onClick={() => navigate('/replay')}
-              className="rounded-full bg-[var(--color-amber)] px-8 py-4 font-mono text-xs font-bold text-black transition-transform hover:scale-[1.03] active:scale-[0.98]"
+              className="flex items-center gap-2 rounded-md bg-[var(--color-amber)] px-5 py-3 font-mono text-xs font-bold text-black transition-colors hover:bg-[var(--color-accent-ink)]"
             >
-              Watch it happen ↓
+              Watch it happen <ArrowDown size={14} strokeWidth={2.5} />
             </button>
             <button
               onClick={() => navigate('/leaderboard')}

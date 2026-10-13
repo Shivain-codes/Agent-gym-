@@ -255,13 +255,11 @@ function Header({ ep }: { ep: EpisodeOut }) {
       <span className="capitalize text-[var(--color-soft-ink)]">· {ep.model}</span>
       <span
         className={cn(
-          "rounded-full px-2 py-0.5 text-xs font-medium",
-          ep.passed
-            ? "bg-[var(--color-pass)]/15 text-[var(--color-pass)]"
-            : "bg-[var(--color-fail)]/15 text-[var(--color-fail)]"
+          "font-mono text-xs",
+          ep.passed ? "text-[var(--color-pass)]" : "text-[var(--color-fail)]"
         )}
       >
-        {ep.passed ? "solved" : "failed"}
+        {ep.passed ? "solved" : "not solved"}
       </span>
       {ep.is_fixture && (
         <span className="rounded-full bg-[var(--color-amber)]/15 px-2 py-0.5 text-xs text-[var(--color-amber)]">
