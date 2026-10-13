@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowDown } from 'lucide-react';
 import { api } from '../../api';
-import { LiveTerminal } from './LiveTerminal';
+import { HeroTerminal } from './HeroTerminal';
 import { TelemetryTicker } from './TelemetryTicker';
 
 const blackBoxSpring = {
@@ -154,9 +154,9 @@ export const Hero: React.FC = () => {
           transition={{ ...blackBoxSpring, delay: 0.85 }}
           className="relative mx-auto mt-16 max-w-4xl md:mt-20"
         >
-          <LiveTerminal />
+          <HeroTerminal />
           <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.25em] text-[var(--color-micro)]">
-            Real trajectory — not a mockup. Scrub it.
+            Real trajectory — not a mockup.
           </p>
         </motion.div>
 
