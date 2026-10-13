@@ -286,6 +286,7 @@ function LiveBattle({
   const [epB, setEpB] = useState<any>(null);
   const [phase, setPhase] = useState<"a" | "b">("a");
   const [error, setError] = useState<string | null>(null);
+  const [waitNote, setWaitNote] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -302,18 +303,42 @@ function LiveBattle({
       }
     };
 
+    // Start one leg, transparently waiting out the server's rate-limit
+    // cooldown so a battle's second leg isn't killed by the first leg
+    // finishing fast (e.g. an auth failure).
+    const startLeg = async (model: string, setEp: (e: any) => void) => {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        if (cancelled) throw new Error("__cancelled__");
+        try {
+          const r = await api.runEpisode(taskId, model);
+          setWaitNote(null);
+          return await pollUntilDone(r.episode_id, setEp);
+        } catch (e: any) {
+          const msg = e.message || "";
+          const m = msg.match(/try again in (\d+)s/);
+          if (m && attempt < 4) {
+            const waitS = parseInt(m[1], 10) + 2;
+            setWaitNote(`Rate limit — starting ${model} in ${waitS}s…`);
+            await sleep(waitS * 1000);
+            setWaitNote(null);
+            continue;
+          }
+          throw e;
+        }
+      }
+      throw new Error("Rate limit persisted — please try again later.");
+    };
+
     (async () => {
       try {
-        const a = await api.runEpisode(taskId, modelA);
-        if (cancelled) return;
-        const doneA: any = await pollUntilDone(a.episode_id, setEpA);
+        const doneA: any = await startLeg(modelA, setEpA);
         if (doneA.status === "failed")
-          throw new Error(`${modelA} run failed — try again or pick another model.`);
+          throw new Error(
+            `${modelA} run failed${doneA.judge_reasoning ? ` — ${doneA.judge_reasoning.slice(0, 120)}` : ""} — fix the server model key, then try again.`
+          );
         if (cancelled) return;
         setPhase("b");
-        const b = await api.runEpisode(taskId, modelB);
-        if (cancelled) return;
-        const doneB: any = await pollUntilDone(b.episode_id, setEpB);
+        const doneB: any = await startLeg(modelB, setEpB);
         if (doneB.status === "failed")
           throw new Error(`${modelB} run failed — try again or pick another model.`);
         if (cancelled) return;
@@ -366,8 +391,8 @@ function LiveBattle({
         </div>
       ) : (
         <p className="mt-6 font-mono text-[10px] leading-relaxed text-[var(--color-micro)]">
-          Each model is solving the task live on the server. Runs are capped at 10
-          steps — grab a coffee, this takes a few minutes.
+          {waitNote ??
+            "Each model is solving the task live on the server. Runs are capped at 10 steps — grab a coffee, this takes a few minutes."}
         </p>
       )}
     </motion.div>
