@@ -227,6 +227,7 @@ function Stat({
 
 function Charts({ rows }: { rows: LeaderboardRow[] }) {
   const maxSteps = Math.max(1, ...rows.map((r) => r.avg_steps));
+  const minSteps = Math.min(...rows.map((r) => r.avg_steps), maxSteps);
   return (
     <div className="grid gap-6 md:grid-cols-3">
       <BarPanel title="Pass rate">
@@ -259,7 +260,7 @@ function Charts({ rows }: { rows: LeaderboardRow[] }) {
             key={r.model}
             value={r.avg_steps}
             display={fmt(r.avg_steps)}
-            frac={r.avg_steps / maxSteps}
+            frac={r.avg_steps > 0 ? minSteps / r.avg_steps : 0}
             color={accentFor(r.model)}
             label={r.model}
           />
