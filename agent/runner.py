@@ -31,7 +31,7 @@ from agent.trajectory import (
     make_episode_id,
 )
 from gym.env import ActionError, GymEnv
-from gym.sandbox import Sandbox
+from gym.sandbox import Sandbox, get_sandbox
 from gym.task_loader import Task
 
 # Tool schemas advertised to the model (OpenAI function-calling format).
@@ -166,7 +166,7 @@ class AgentRunner:
             max_steps=self.max_steps,
         )
 
-        env = GymEnv(task, sandbox=sandbox or Sandbox(), max_steps=self.max_steps)
+        env = GymEnv(task, sandbox=sandbox or get_sandbox(), max_steps=self.max_steps)
         trajectory = Trajectory(
             episode_id=episode_id,
             task_id=task.id,
