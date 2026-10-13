@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowDown } from 'lucide-react';
 import { api } from '../../api';
 import { HeroTerminal } from './HeroTerminal';
+import { MarqueeSection } from './MarqueeSection';
 
 const blackBoxSpring = {
   type: 'spring',
@@ -159,6 +160,7 @@ export const Hero: React.FC = () => {
           </p>
         </motion.div>
 
+        <MarqueeSection />
       </div>
     </section>
   );
