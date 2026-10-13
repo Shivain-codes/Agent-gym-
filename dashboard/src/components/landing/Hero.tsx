@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowDown } from 'lucide-react';
 import { api } from '../../api';
 import { HeroTerminal } from './HeroTerminal';
-import { TelemetryTicker } from './TelemetryTicker';
 
 const blackBoxSpring = {
   type: 'spring',
@@ -160,10 +159,6 @@ export const Hero: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Ticker */}
-        <div className="mt-16 border-t border-[var(--color-hairline)]">
-          <TelemetryTicker />
-        </div>
       </div>
     </section>
   );
