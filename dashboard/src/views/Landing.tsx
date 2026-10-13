@@ -109,12 +109,7 @@ const FreshFromGym: React.FC = () => {
               return {
                 id: ep.episode_id,
                 index: String(i + 1).padStart(2, '0'),
-                title: getTaskName(ep.task_id),
-                descriptor: (
-                  <span className={ep.passed ? 'text-[var(--color-pass)]' : 'text-[var(--color-fail)]'}>
-                    {ep.passed ? '\u25cf solved' : '\u25cf not solved'}
-                  </span>
-                ),
+                title: getTaskName(ep.task_id).replace(/_/g, ' '),
                 meta: (
                   <>
                     <span className="uppercase tracking-widest">{difficulty}</span>
@@ -124,6 +119,8 @@ const FreshFromGym: React.FC = () => {
                     <span>{ep.num_steps} steps</span>
                     <span className="text-[var(--color-border)]">{' / '}</span>
                     <span>judge {ep.judge_score != null ? ep.judge_score.toFixed(1) : '—'}</span>
+                    <span className="text-[var(--color-border)]">{' / '}</span>
+                    <span>{ep.passed ? 'solved' : 'not solved'}</span>
                   </>
                 ),
                 detail: (
