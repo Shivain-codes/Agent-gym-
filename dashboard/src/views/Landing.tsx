@@ -119,94 +119,55 @@ const FreshFromGym: React.FC = () => {
             Updated: Just Now
           </div>
         </div>
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="border-t border-[var(--color-border)]">
           {episodes === null ? (
             [0, 1, 2].map((i) => (
-              <div key={i} className="p-8 rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)]">
-                <div className="h-3 w-2/3 bg-[var(--color-muted-fill)] animate-pulse rounded mb-4" />
-                <div className="h-6 w-1/2 bg-[var(--color-muted-fill)] animate-pulse rounded mb-8" />
-                <div className="h-20 w-full bg-[var(--color-muted-fill)] animate-pulse rounded" />
+              <div key={i} className="border-b border-[var(--color-border)] py-8 flex items-baseline gap-8">
+                <div className="h-4 w-8 shrink-0 bg-[var(--color-muted-fill)] animate-pulse rounded" />
+                <div className="flex-1">
+                  <div className="h-7 w-2/3 bg-[var(--color-muted-fill)] animate-pulse rounded mb-3" />
+                  <div className="h-3 w-1/3 bg-[var(--color-muted-fill)] animate-pulse rounded" />
+                </div>
               </div>
             ))
           ) : episodes.length === 0 ? (
-            <div className="md:col-span-3 py-16 text-center font-mono text-sm text-[var(--color-micro)] border border-dashed border-[var(--color-border)] rounded-2xl">
+            <div className="py-16 text-center font-mono text-sm text-[var(--color-micro)] border-b border-dashed border-[var(--color-border)]">
               No trajectories recorded yet — run the gym to populate this feed.
             </div>
-          ) : episodes.map((ep) => {
+          ) : episodes.map((ep, i) => {
             const diffMatch = ep.task_id.match(/^(easy|medium|hard|expert)/i);
-            const difficulty = diffMatch ? diffMatch[1].toUpperCase() : 'TASK';
-            const diffColor =
-              difficulty === 'EASY' ? 'border-green-500/40 text-green-400 bg-green-500/10' :
-              difficulty === 'MEDIUM' ? 'border-blue-500/40 text-blue-400 bg-blue-500/10' :
-              difficulty === 'HARD' ? 'border-amber-500/40 text-amber-400 bg-amber-500/10' :
-              'border-purple-500/40 text-purple-400 bg-purple-500/10';
-            const stepSegs = 10;
-            const filledSegs = Math.min(ep.num_steps, stepSegs);
+            const difficulty = diffMatch ? diffMatch[1] : 'task';
             return (
-            <motion.div
-              key={ep.episode_id}
-              onClick={() => navigate(`/replay/${ep.episode_id}`)}
-              className="cursor-pointer rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] hover:border-[var(--color-amber)]/60 hover:bg-white/[0.02] transition-colors duration-200 group relative overflow-hidden flex flex-col"
-            >
-              {/* Status accent bar */}
-              <div className={cn("h-1 w-full", ep.passed ? "bg-gradient-to-r from-green-500 to-emerald-400" : "bg-gradient-to-r from-red-500 to-rose-400")} />
-              <div className="p-8 flex flex-col flex-1">
-                {/* Badges */}
-                <div className="flex items-center justify-between mb-6">
-                  <span className={cn("text-[10px] font-mono px-2.5 py-1 rounded-full border font-bold tracking-wider", diffColor)}>
-                    {difficulty}
-                  </span>
-                  <span className={cn(
-                    "text-[10px] font-mono px-2.5 py-1 rounded-full border font-bold tracking-wider",
-                    ep.passed ? "border-green-500 text-green-400 bg-green-500/10" : "border-red-500 text-red-400 bg-red-500/10"
-                  )}>
-                    {ep.passed ? "● PASSED" : "● FAILED"}
-                  </span>
+              <motion.div
+                key={ep.episode_id}
+                onClick={() => navigate(`/replay/${ep.episode_id}`)}
+                className="group cursor-pointer border-b border-[var(--color-border)] px-2 md:px-4 -mx-2 md:-mx-4 py-8 md:py-10 flex items-baseline gap-6 md:gap-10 hover:bg-white/[0.015] transition-colors duration-200"
+              >
+                <span className="font-mono text-xs text-[var(--color-micro)] w-8 shrink-0">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display text-2xl md:text-4xl font-bold tracking-tight text-[var(--color-ink)] group-hover:text-[var(--color-amber)] transition-colors leading-tight">
+                    {getTaskName(ep.task_id)}
+                  </h3>
+                  <p className="font-mono text-[11px] text-[var(--color-micro)] mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="uppercase tracking-widest">{difficulty}</span>
+                    <span className="text-[var(--color-border)]">/</span>
+                    <span className="capitalize">{ep.model}</span>
+                    <span className="text-[var(--color-border)]">/</span>
+                    <span>{ep.num_steps} steps</span>
+                    <span className="text-[var(--color-border)]">/</span>
+                    <span>judge {ep.judge_score != null ? ep.judge_score.toFixed(1) : '—'}</span>
+                    <span className="text-[var(--color-border)]">/</span>
+                    <span className={ep.passed ? 'text-[var(--color-pass)]' : 'text-[var(--color-fail)]'}>
+                      {ep.passed ? '\u25cf solved' : '\u25cf not solved'}
+                    </span>
+                  </p>
                 </div>
-                {/* Task */}
-                <h3 className="font-display text-2xl font-bold tracking-tight text-[var(--color-ink)] line-clamp-2 group-hover:text-[var(--color-amber)] transition-colors leading-tight">{getTaskName(ep.task_id)}</h3>
-                <span className="font-mono text-[10px] text-[var(--color-micro)] block mt-2 mb-6">{ep.episode_id}</span>
-                {/* Step trajectory visual */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-widest text-[var(--color-micro)] mb-2">
-                    <span>Trajectory</span>
-                    <span className="text-[var(--color-ink)] font-bold">{ep.num_steps} steps</span>
-                  </div>
-                  <div className="flex gap-1">
-                    {Array.from({ length: stepSegs }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={cn(
-                          "h-1.5 flex-1 rounded-full",
-                          i < filledSegs
-                            ? ep.passed ? "bg-[var(--color-amber)]" : "bg-red-400"
-                            : "bg-[var(--color-hairline)]"
-                        )}
-                      />
-                    ))}
-                  </div>
-                </div>
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 border-t border-[var(--color-border)] pt-6 mt-auto">
-                  <div>
-                    <div className="font-mono text-[9px] uppercase tracking-widest text-[var(--color-micro)] mb-1">Model</div>
-                    <div className="font-mono text-sm font-bold text-[var(--color-ink)] capitalize">{ep.model}</div>
-                  </div>
-                  <div>
-                    <div className="font-mono text-[9px] uppercase tracking-widest text-[var(--color-micro)] mb-1">Judge</div>
-                    <div className="font-mono text-sm font-bold text-[var(--color-amber)]">{ep.judge_score != null ? ep.judge_score.toFixed(1) : 'N/A'}</div>
-                  </div>
-                  <div>
-                    <div className="font-mono text-[9px] uppercase tracking-widest text-[var(--color-micro)] mb-1">Reward</div>
-                    <div className="font-mono text-sm font-bold text-[var(--color-ink)]">{ep.final_reward.toFixed(2)}</div>
-                  </div>
-                </div>
-                {/* Hover CTA */}
-                <div className="mt-6 font-mono text-xs text-[var(--color-micro)] group-hover:text-[var(--color-amber)] transition-colors flex items-center gap-1">
-                  View replay <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
-                </div>
-              </div>
-            </motion.div>
+                <span className="hidden sm:block shrink-0 font-mono text-sm text-[var(--color-micro)] group-hover:text-[var(--color-amber)] group-hover:translate-x-1 transition-all">
+                  &rarr;
+                </span>
+              </motion.div>
             );
           })}
         </div>
