@@ -152,20 +152,27 @@ export const LiveTerminal: React.FC = () => {
     <div ref={rootRef} className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[#0C0C0F] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8)]">
       {/* Title bar */}
       <div className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-3">
-        <span className="truncate font-mono text-[11px] text-[var(--color-micro)]">
-          {episode.episode_id}
-        </span>
-        <span className="font-mono text-[11px] text-[var(--color-micro)]">
-          <span className="capitalize text-[var(--color-soft-ink)]">{episode.model}</span>
-          {' · '}
-          <span className={episode.passed ? 'text-[var(--color-pass)]' : 'text-[var(--color-fail)]'}>
-            {episode.passed ? 'solved' : 'not solved'}
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
+          </div>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-micro)]">
+            Live replay
           </span>
+        </div>
+        <span className="truncate font-mono text-[10px] text-[var(--color-micro)]">
+          {episode.episode_id} · <span className="capitalize text-[var(--color-soft-ink)]">{episode.model}</span>
         </span>
       </div>
 
       {/* Terminal body */}
       <div className="min-h-[300px] p-5 font-mono text-[13px] leading-relaxed md:min-h-[340px]">
+        <div className="mb-4 text-[var(--color-micro)]">
+          <span className="text-[var(--color-amber)]">$</span> agentgym replay --episode {episode.episode_id}
+        </div>
+
         <AnimatePresence mode="wait">
           {phase === 'verdict' ? (
             <motion.div
@@ -174,8 +181,11 @@ export const LiveTerminal: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-3"
             >
-              <div className="font-mono text-xs uppercase tracking-widest text-[var(--color-micro)]">
-                Task {episode.passed ? 'solved' : 'not solved'}
+              <div className={cn(
+                "inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-xs font-bold tracking-widest",
+                episode.passed ? "bg-[var(--color-amber)]/15 text-[var(--color-accent-ink)]" : "bg-red-500/15 text-[var(--color-fail)]"
+              )}>
+                {episode.passed ? '✓ TASK SOLVED' : '✗ TASK FAILED'}
               </div>
               <div className="text-[var(--color-soft-ink)]">
                 Judge score: <span className="font-bold text-[var(--color-amber)]">{episode.judge_score?.toFixed(1) ?? '—'}/10</span>
