@@ -17,7 +17,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from agent.llm import DEFAULT_BASE_URL, MAX_TOKENS, resolve_model
+from agent.llm import DEFAULT_BASE_URL, MAX_TOKENS, resolve_base_url, resolve_model
 
 JUDGE_MODEL = "ultra"
 
@@ -148,8 +148,7 @@ class Judge:
             client = OpenAI(
                 api_key=os.environ.get("NEBIUS_API_KEY")
                 or os.environ.get("NVIDIA_API_KEY"),
-                base_url=os.environ.get("NEBIUS_BASE_URL")
-                or os.environ.get("NVIDIA_BASE_URL", DEFAULT_BASE_URL),
+                base_url=resolve_base_url(),
             )
             resp = client.chat.completions.create(
                 model=self.model_id,

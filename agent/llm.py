@@ -33,6 +33,7 @@ MODEL_REGISTRY: dict[str, str] = {
 }
 DEFAULT_MODEL = "nano"
 DEFAULT_BASE_URL = "https://api.tokenfactory.nebius.com/v1/"
+NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 
 # Reasoning models need headroom beyond the tool call itself.
 MAX_TOKENS = 8192
@@ -44,6 +45,23 @@ def resolve_model(model: str) -> str:
         return MODEL_REGISTRY[model]
     # Allow passing a full model id directly.
     return model
+
+
+def resolve_base_url(explicit: str | None = None) -> str:
+    """Pick the API base URL, defaulting to the backend matching the key in use.
+
+    An explicit URL (param or env) always wins. Otherwise, when only an
+    NVIDIA key is configured we must talk to NVIDIA's Integrate API — not
+    fall back to the Nebius default, which would 401 the NVIDIA key.
+    """
+    if explicit:
+        return explicit
+    env_url = os.environ.get("NEBIUS_BASE_URL") or os.environ.get("NVIDIA_BASE_URL")
+    if env_url:
+        return env_url
+    if os.environ.get("NVIDIA_API_KEY") and not os.environ.get("NEBIUS_API_KEY"):
+        return NVIDIA_BASE_URL
+    return DEFAULT_BASE_URL
 
 
 @dataclass
@@ -89,9 +107,7 @@ class TokenFactoryClient:
             api_key=api_key
             or os.environ.get("NEBIUS_API_KEY")
             or os.environ.get("NVIDIA_API_KEY"),
-            base_url=base_url
-            or os.environ.get("NEBIUS_BASE_URL")
-            or os.environ.get("NVIDIA_BASE_URL", DEFAULT_BASE_URL),
+            base_url=resolve_base_url(base_url),
         )
 
     @property
