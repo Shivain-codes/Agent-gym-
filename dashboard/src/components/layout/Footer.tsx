@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
         <div className="col-span-1">
           <div className="mb-4 flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-[var(--color-amber)]"></div>
-            <span className="font-display text-lg font-bold text-[var(--color-ink)]">AgentGym</span>
+            <span className="font-display text-lg font-semibold text-[var(--color-ink)]">AgentGym</span>
           </div>
           <p className="text-xs leading-relaxed text-[var(--color-body)]">
             The proving ground for coding agents. Watch AI learn to code — every run

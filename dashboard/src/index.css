@@ -16,9 +16,9 @@
   --color-soft-fill: #121216;
   --color-muted-fill: #1A1A20;
 
-  --font-display: "Space Grotesk", sans-serif;
-  --font-body: "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-display: "Geist", sans-serif;
+  --font-body: "Geist", sans-serif;
+  --font-mono: "Geist Mono", monospace;
 }
 
 body {

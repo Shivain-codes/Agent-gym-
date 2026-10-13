@@ -61,7 +61,7 @@ export default function BattleView() {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
           SYS_LOG // MODEL_BATTLE
         </p>
-        <h1 className="mt-3 text-5xl font-display font-bold tracking-tighter text-[var(--color-ink)]">
+        <h1 className="mt-3 text-5xl font-display font-semibold tracking-tighter text-[var(--color-ink)]">
           Model Battle
         </h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--color-body)]">
@@ -495,7 +495,7 @@ function BattleResult({
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
           The verdict
         </p>
-        <p className="mt-3 font-display text-3xl font-bold tracking-tight text-[var(--color-ink)]">
+        <p className="mt-3 font-display text-3xl font-semibold tracking-tight text-[var(--color-ink)]">
           {cap(faster)} is faster
           {stepDiff > 0 && <span className="text-[var(--color-body)]"> by {stepDiff} step{stepDiff === 1 ? "" : "s"}.</span>}
           {split ? (
@@ -534,7 +534,7 @@ function BattleColumn({ model, ep, color }: { model: string; ep: any; color: str
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between rounded-sm border border-[var(--color-hairline)] bg-[var(--color-panel)] p-4">
-        <span className="text-xl font-display font-bold text-[var(--color-ink)] capitalize">{model}</span>
+        <span className="text-xl font-display font-semibold text-[var(--color-ink)] capitalize">{model}</span>
         <div className="text-right font-mono text-xs">
           <div className={cn("font-bold", ep.passed ? "text-[var(--color-pass)]" : "text-[var(--color-fail)]")}>
             {ep.passed ? "SOLVED" : "FAILED"}

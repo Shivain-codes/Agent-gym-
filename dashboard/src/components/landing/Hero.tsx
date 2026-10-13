@@ -55,7 +55,7 @@ export const Hero: React.FC = () => {
         {/* NAV */}
         <nav className="grid h-18 grid-cols-[1fr_auto_1fr] items-center border-b border-[var(--color-hairline)]">
           <div className="justify-self-start">
-            <span className="font-display text-xl font-bold tracking-tighter text-[var(--color-ink)]">
+            <span className="font-display text-xl font-semibold tracking-tighter text-[var(--color-ink)]">
               AgentGym<span className="text-[var(--color-amber)]">.</span>
             </span>
           </div>
@@ -96,7 +96,7 @@ export const Hero: React.FC = () => {
           </motion.div>
 
           <h1
-            className="font-display font-bold leading-[0.95] tracking-tighter text-[var(--color-ink)]"
+            className="font-display font-semibold leading-[0.95] tracking-tighter text-[var(--color-ink)]"
             style={{ fontSize: 'clamp(52px, 9vw, 148px)' }}
           >
             {['Watch AI', 'learn to code.'].map((line, i) => (

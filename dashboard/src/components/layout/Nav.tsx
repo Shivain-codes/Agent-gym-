@@ -19,7 +19,7 @@ export const Nav: React.FC = () => {
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center h-18">
         {/* Wordmark left */}
         <Link to="/" className="flex items-center gap-3 group justify-self-start">
-          <span className="font-display text-xl font-bold tracking-tighter text-[var(--color-ink)] transition-colors group-hover:text-[var(--color-amber)]">
+          <span className="font-display text-xl font-semibold tracking-tighter text-[var(--color-ink)] transition-colors group-hover:text-[var(--color-amber)]">
             AgentGym
           </span>
         </Link>

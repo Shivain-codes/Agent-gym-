@@ -44,7 +44,7 @@ function EpisodePicker() {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
           SYS_LOG // TRAJECTORY_ARCHIVE
         </p>
-        <h1 className="mt-3 text-5xl font-display font-bold tracking-tighter text-[var(--color-ink)]">Episode Replay</h1>
+        <h1 className="mt-3 text-5xl font-display font-semibold tracking-tighter text-[var(--color-ink)]">Episode Replay</h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--color-body)]">
           Step through an agent trajectory: every action, code diff, and sandbox
           output — the flight recorder for AI coders.

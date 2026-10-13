@@ -39,7 +39,7 @@ const CountUp = ({ value, label }: { value: number | string, label: string }) =>
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <motion.span className="text-3xl font-display font-bold text-[var(--color-ink)] tracking-tighter">
+      <motion.span className="text-3xl font-display font-semibold text-[var(--color-ink)] tracking-tighter">
         {display}
       </motion.span>
       <span className="text-[9px] font-mono uppercase tracking-widest text-[var(--color-micro)]">{label}</span>
@@ -111,7 +111,7 @@ const FreshFromGym: React.FC = () => {
       <div className="mx-auto max-w-7xl">
         <div className="flex items-baseline justify-between mb-16">
           <div className="flex items-baseline gap-4">
-            <h2 className="font-display text-4xl font-bold tracking-tighter text-[var(--color-ink)] uppercase">Fresh from the Gym</h2>
+            <h2 className="font-display text-4xl font-semibold tracking-tighter text-[var(--color-ink)]">Fresh from the gym</h2>
             <span className="font-mono text-xs text-[var(--color-micro)]">LATEST_TRAJECTORIES</span>
           </div>
           <div className="hidden md:block h-px flex-1 mx-8 bg-[var(--color-border)]" />
@@ -147,7 +147,7 @@ const FreshFromGym: React.FC = () => {
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-display text-2xl md:text-4xl font-bold tracking-tight text-[var(--color-ink)] group-hover:text-[var(--color-amber)] transition-colors leading-tight">
+                  <h3 className="font-display text-2xl md:text-4xl font-semibold tracking-tight text-[var(--color-ink)] group-hover:text-[var(--color-amber)] transition-colors leading-tight">
                     {getTaskName(ep.task_id)}
                   </h3>
                   <p className="font-mono text-[11px] text-[var(--color-micro)] mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -210,7 +210,7 @@ const HowItWorks: React.FC = () => {
               className="sticky top-32"
             >
               <div className="flex items-baseline gap-4 mb-6">
-                <h2 className="font-display text-4xl font-bold tracking-tighter text-[var(--color-ink)] uppercase">How it works</h2>
+                <h2 className="font-display text-4xl font-semibold tracking-tighter text-[var(--color-ink)]">How it works</h2>
               </div>
               <p className="text-lg text-[var(--color-body)] leading-relaxed max-w-md">
                 Our pipeline transforms broken code into high-fidelity training data through a rigorous, automated loop.
@@ -237,7 +237,7 @@ const HowItWorks: React.FC = () => {
                     </div>
                   </div>
                   <div className="md:w-3/4">
-                    <h3 className="mb-4 font-display text-2xl font-bold text-[var(--color-ink)]">{step.title}</h3>
+                    <h3 className="mb-4 font-display text-2xl font-semibold text-[var(--color-ink)]">{step.title}</h3>
                     <p className="text-sm leading-relaxed text-[var(--color-body)] font-mono">{step.desc}</p>
                   </div>
                 </div>
@@ -257,7 +257,7 @@ const ComparisonHeadline: React.FC<{ rows: LeaderboardRow[] }> = ({ rows }) => {
     const r = rows[0];
     return (
       <>
-        <h3 className="text-6xl md:text-9xl font-display font-bold tracking-tighter text-[var(--color-ink)] leading-none">
+        <h3 className="text-6xl md:text-9xl font-display font-semibold tracking-tighter text-[var(--color-ink)] leading-none">
           {cap(r.model)} holds <br />
           <span className="text-[var(--color-body)]">the board.</span>
         </h3>
@@ -274,7 +274,7 @@ const ComparisonHeadline: React.FC<{ rows: LeaderboardRow[] }> = ({ rows }) => {
   const split = fastest.model !== bestJudge.model;
   return (
     <>
-      <h3 className="text-6xl md:text-9xl font-display font-bold tracking-tighter text-[var(--color-ink)] leading-none">
+      <h3 className="text-6xl md:text-9xl font-display font-semibold tracking-tighter text-[var(--color-ink)] leading-none">
         {cap(fastest.model)} is fastest. <br />
         <span className="text-[var(--color-body)]">
           {split ? 'The judge disagrees.' : 'The judge agrees.'}
@@ -317,7 +317,7 @@ const ModelComparison: React.FC = () => {
             >
               <div className="flex items-baseline gap-4 mb-6">
                 <span className="font-mono text-6xl font-bold text-[var(--color-border)] opacity-50">02</span>
-                <h2 className="font-display text-4xl font-bold tracking-tighter text-[var(--color-ink)] uppercase">Model Comparison</h2>
+                <h2 className="font-display text-4xl font-semibold tracking-tighter text-[var(--color-ink)]">Model comparison</h2>
               </div>
               <p className="text-lg text-[var(--color-body)] leading-relaxed max-w-md">
                 {rows && rows.length >= 2 ? (
@@ -427,7 +427,7 @@ const DatasetSection: React.FC = () => {
             >
               <div className="flex items-baseline gap-4 mb-6">
                 <span className="font-mono text-6xl font-bold text-[var(--color-border)] opacity-50">03</span>
-                <h2 className="font-display text-4xl font-bold tracking-tighter text-[var(--color-ink)] uppercase">The Flight Data Archive</h2>
+                <h2 className="font-display text-4xl font-semibold tracking-tighter text-[var(--color-ink)]">The flight data archive</h2>
               </div>
               <p className="text-lg text-[var(--color-body)] leading-relaxed mb-12 max-w-md">
                 Our dataset provides high-fidelity trajectories of AI agents solving real-world coding tasks.

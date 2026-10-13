@@ -54,7 +54,7 @@ export default function Leaderboard() {
   if (rows.length === 0)
     return (
       <section className="px-6 py-24">
-        <h1 className="text-4xl font-display font-bold tracking-tighter text-[var(--color-ink)]">Leaderboard</h1>
+        <h1 className="text-4xl font-display font-semibold tracking-tighter text-[var(--color-ink)]">Leaderboard</h1>
         <BlackBoxPanel className="mt-6 p-10 text-left text-[var(--color-body)] font-mono">
           No completed episodes yet. Run some episodes to populate the board.
         </BlackBoxPanel>
@@ -72,7 +72,7 @@ export default function Leaderboard() {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
           SYS_LOG // MODEL_RANKINGS
         </p>
-        <h1 className="mt-3 text-5xl font-display font-bold tracking-tighter text-[var(--color-ink)]">Leaderboard</h1>
+        <h1 className="mt-3 text-5xl font-display font-semibold tracking-tighter text-[var(--color-ink)]">Leaderboard</h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--color-body)]">
           Every model passes every task. The gym separates them on efficiency —
           and on code quality, where the judge has its own opinion.
@@ -109,7 +109,7 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
             The takeaway
           </p>
-          <p className="mt-3 font-display text-3xl font-bold tracking-tight text-[var(--color-ink)] md:text-4xl">
+          <p className="mt-3 font-display text-3xl font-semibold tracking-tight text-[var(--color-ink)] md:text-4xl">
             {cap(r.model)} passes everything.{" "}
             <span className="text-[var(--color-body)]">Add a rival to see the real story.</span>
           </p>
@@ -150,7 +150,7 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
           The takeaway
         </p>
-        <p className="mt-3 font-display text-3xl font-bold tracking-tight text-[var(--color-ink)] md:text-4xl">
+        <p className="mt-3 font-display text-3xl font-semibold tracking-tight text-[var(--color-ink)] md:text-4xl">
           {cap(insight.fastest.model)} is fastest.{" "}
           <span className="text-[var(--color-body)]">The judge disagrees.</span>
         </p>
@@ -181,7 +181,7 @@ function ModelCards({ rows }: { rows: LeaderboardRow[] }) {
             className="relative overflow-hidden h-full"
           >
             <div className="flex items-center justify-between mb-6">
-              <span className="text-xl font-display font-bold capitalize text-[var(--color-ink)]">{r.model}</span>
+              <span className="text-xl font-display font-semibold capitalize text-[var(--color-ink)]">{r.model}</span>
               {i === 0 && (
                 <span className="rounded-sm bg-[var(--color-amber)]/15 px-2 py-0.5 text-[10px] font-mono font-bold text-[var(--color-amber)] uppercase">
                   leader

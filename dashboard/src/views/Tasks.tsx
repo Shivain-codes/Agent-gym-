@@ -73,7 +73,7 @@ export default function Tasks() {
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
             SYS_LOG // SCORING_SET
           </p>
-          <h1 className="mt-3 text-5xl font-display font-bold tracking-tighter text-[var(--color-ink)]">Tasks</h1>
+          <h1 className="mt-3 text-5xl font-display font-semibold tracking-tighter text-[var(--color-ink)]">Tasks</h1>
           <p className="mt-3 text-base leading-relaxed text-[var(--color-body)]">
             {tasks.length} broken-repo challenges. Each one ships with a hidden bug,
             a test suite, and a rubric — the raw material the gym scores.
@@ -131,7 +131,7 @@ export default function Tasks() {
                           {t.difficulty}
                         </span>
                       </div>
-                      <h3 className="font-display text-lg font-bold text-[var(--color-ink)]">{t.name}</h3>
+                      <h3 className="font-display text-lg font-semibold text-[var(--color-ink)]">{t.name}</h3>
                     </div>
 
                     <div className="flex items-center gap-6">
