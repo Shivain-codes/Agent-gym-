@@ -7,6 +7,7 @@ import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { Bug, Terminal, History, ArrowRight } from 'lucide-react';
 import { EditorialList } from '../components/ui/editorial-list';
+import { Stats, type StatItem } from '../components/ui/stats-section-with-text';
 
 // Softer spring for scroll-triggered reveals — settles without judder
 const revealSpring = {
@@ -176,44 +177,54 @@ const HowItWorks: React.FC = () => {
   );
 };
 
-const ComparisonHeadline: React.FC<{ rows: LeaderboardRow[] }> = ({ rows }) => {
-  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  if (rows.length === 0) return null;
-  const line =
-    rows.length === 1
-      ? `${cap(rows[0].model)} holds the board.`
-      : (() => {
-          const fastest = [...rows].sort((a, b) => a.avg_steps - b.avg_steps)[0];
-          const bestJudge = [...rows].sort(
-            (a, b) => (b.avg_judge_score ?? 0) - (a.avg_judge_score ?? 0)
-          )[0];
-          const split = fastest.model !== bestJudge.model;
-          return `${cap(fastest.model)} is fastest. ${split ? 'The judge disagrees.' : 'The judge agrees.'}`;
-        })();
-  const stat =
-    rows.length === 1
-      ? { steps: rows[0].avg_steps, judge: rows[0].avg_judge_score, who: null as string | null }
-      : (() => {
-          const fastest = [...rows].sort((a, b) => a.avg_steps - b.avg_steps)[0];
-          const bestJudge = [...rows].sort(
-            (a, b) => (b.avg_judge_score ?? 0) - (a.avg_judge_score ?? 0)
-          )[0];
-          return { steps: fastest.avg_steps, judge: bestJudge.avg_judge_score, who: cap(bestJudge.model) };
-        })();
-  return (
-    <>
-      <h3 className="font-display text-3xl md:text-5xl font-semibold tracking-tighter text-[var(--color-ink)] leading-tight">
-        {line}
-      </h3>
-      <div className="mt-6 flex justify-center gap-8 font-mono text-xs uppercase text-[var(--color-accent-ink)]">
-        <span>{stat.steps.toFixed(1)} steps</span>
-        <span className="text-[var(--color-border)]">/</span>
-        <span>
-          {stat.judge?.toFixed(1) ?? '—'} judge{stat.who ? ` · ${stat.who}` : ''}
-        </span>
-      </div>
-    </>
-  );
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const fastestRow = (rows: LeaderboardRow[]) =>
+  [...rows].sort((a, b) => a.avg_steps - b.avg_steps)[0];
+
+const bestJudgeRow = (rows: LeaderboardRow[]) =>
+  [...rows].sort((a, b) => (b.avg_judge_score ?? 0) - (a.avg_judge_score ?? 0))[0];
+
+const headlineLine = (rows: LeaderboardRow[]): string => {
+  if (rows.length === 0) return '';
+  if (rows.length === 1) return `${cap(rows[0].model)} holds the board.`;
+  const fastest = fastestRow(rows);
+  const bestJudge = bestJudgeRow(rows);
+  const split = fastest.model !== bestJudge.model;
+  return `${cap(fastest.model)} is fastest. ${split ? 'The judge disagrees.' : 'The judge agrees.'}`;
+};
+
+/** Real leaderboard numbers as stat cards — no invented deltas. */
+const buildStats = (rows: LeaderboardRow[]): StatItem[] => {
+  if (rows.length === 0) return [];
+  const fastest = fastestRow(rows);
+  const bestJudge = bestJudgeRow(rows);
+  return [
+    {
+      value: fastest.avg_steps.toFixed(1),
+      annotation: 'per task',
+      label: `Avg steps · ${cap(fastest.model)}`,
+      trend: 'down',
+    },
+    {
+      value: bestJudge.avg_judge_score != null ? bestJudge.avg_judge_score.toFixed(2) : '—',
+      annotation: '/ 10',
+      label: `Judge score · ${cap(bestJudge.model)}`,
+      trend: 'up',
+    },
+    {
+      value: `${(fastest.pass_rate * 100).toFixed(0)}%`,
+      annotation: 'tasks passed',
+      label: 'Pass rate',
+      trend: 'up',
+    },
+    {
+      value: String(fastest.episodes),
+      annotation: 'trajectories',
+      label: 'Episodes run',
+      trend: 'up',
+    },
+  ];
 };
 
 const ModelComparison: React.FC = () => {
@@ -263,12 +274,40 @@ const ModelComparison: React.FC = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={revealSpring}
-                className="w-full py-10 md:py-12 border-y border-[var(--color-border)] text-center bg-[var(--color-panel)]"
+                className="w-full py-10 md:py-12 border-y border-[var(--color-border)] bg-[var(--color-panel)] px-6 md:px-10"
               >
                 {loading ? (
-                  <div className="h-10 w-64 bg-[var(--color-muted-fill)] animate-pulse rounded mx-auto" />
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div className="space-y-4">
+                      <div className="h-6 w-24 bg-[var(--color-muted-fill)] animate-pulse rounded-full" />
+                      <div className="h-10 w-3/4 bg-[var(--color-muted-fill)] animate-pulse rounded" />
+                      <div className="h-16 w-full bg-[var(--color-muted-fill)] animate-pulse rounded" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div key={i} className="h-44 bg-[var(--color-muted-fill)] animate-pulse rounded-md" />
+                      ))}
+                    </div>
+                  </div>
+                ) : rows && rows.length > 0 ? (
+                  <Stats
+                    badge="Live board"
+                    title={headlineLine(rows)}
+                    description={
+                      rows.length >= 2 ? (
+                        <>All three models pass every task. The gym still separates them — on efficiency
+                        and on code quality.</>
+                      ) : (
+                        <>One model on the board, every task passed. The gym is ready for rivals —
+                        that's when efficiency and code quality start to diverge.</>
+                      )
+                    }
+                    stats={buildStats(rows)}
+                  />
                 ) : (
-                  <ComparisonHeadline rows={rows ?? []} />
+                  <div className="py-16 text-center font-mono text-sm text-[var(--color-micro)] border border-dashed border-[var(--color-border)] rounded-2xl">
+                    No completed episodes yet — run the gym to populate this board.
+                  </div>
                 )}
               </motion.div>
 
