@@ -320,7 +320,7 @@ const ModelComparison: React.FC = () => {
                   </div>
                 ) : rows && rows.length > 0 ? (
                 <table className="w-full border-collapse font-mono text-sm">
-                  <thead className="bg-[var(--color-soft-fill)]">
+                  <thead className="bg-[var(--color-soft-fill)]/60">
                     <tr className="text-[10px] uppercase text-[var(--color-micro)] border-b border-[var(--color-border)]">
                       <th className="text-left py-4 pl-4">Rank</th>
                       <th className="text-left py-4">Model</th>
@@ -329,7 +329,7 @@ const ModelComparison: React.FC = () => {
                       <th className="text-right py-4 pr-4">Judge</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-[var(--color-panel)]">
+                  <tbody className="bg-[var(--color-panel)]/60">
                     {rows.map((r, i) => {
                       const isUltra = r.model.toLowerCase() === 'ultra';
                       return (
