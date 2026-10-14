@@ -274,7 +274,7 @@ const ModelComparison: React.FC = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={revealSpring}
-                className="w-full py-10 md:py-12 border-y border-[var(--color-border)] bg-[var(--color-panel)] px-6 md:px-10"
+                className="w-full py-10 md:py-12 px-6 md:px-10"
               >
                 {loading ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
