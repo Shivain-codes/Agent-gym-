@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { RandomLetterSwap } from '../ui/random-letter-swap';
 
 const blackBoxSpring = {
   type: 'spring',
@@ -32,7 +33,11 @@ export const Nav: React.FC = () => {
               to={`/${item.toLowerCase()}`}
               className="relative text-sm font-medium text-[var(--color-soft-ink)] transition-colors hover:text-[var(--color-amber)] group"
             >
-              {item}
+              <RandomLetterSwap
+                label={item}
+                staggerDuration={0.025}
+                transition={{ duration: 0.6, type: "spring" }}
+              />
               <span className="absolute -bottom-1 left-0 h-px w-0 bg-[var(--color-amber)] transition-all duration-300 group-hover:w-full" />
             </Link>
           ))}
