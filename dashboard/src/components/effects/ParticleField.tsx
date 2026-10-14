@@ -63,7 +63,7 @@ export const ParticleField: React.FC = () => {
       nodes = Array.from({ length: COUNT }, () => {
         const roll = Math.random();
         const kind: 0 | 1 | 2 = roll < 0.55 ? 0 : roll < 0.72 ? 1 : 2;
-        const bright = Math.random() < 0.16;
+        const bright = Math.random() < 0.10;
         return {
           x: Math.random() * w,
           y: Math.random() * h,
@@ -112,7 +112,7 @@ export const ParticleField: React.FC = () => {
           if (Math.abs(dx) > LINK_DIST || Math.abs(dy) > LINK_DIST) continue;
           const d = Math.hypot(dx, dy);
           if (d < LINK_DIST) {
-            const alpha = (1 - d / LINK_DIST) * 0.16;
+            const alpha = (1 - d / LINK_DIST) * 0.12;
             ctx.strokeStyle = `rgba(118, 185, 0, ${alpha.toFixed(3)})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -131,8 +131,8 @@ export const ParticleField: React.FC = () => {
         const dym = n.y - mouse.y;
         const near = Math.max(0, 1 - Math.hypot(dxm, dym) / 220);
         const alpha = Math.min(1, n.baseAlpha * tw * n.glow * (1 + near * 0.9));
-        const size = n.r * 9 * n.glow;
-        ctx.globalAlpha = alpha * 0.55;
+        const size = n.r * 6 * n.glow;
+        ctx.globalAlpha = alpha * 0.35;
         ctx.drawImage(sprites[n.kind], n.x - size / 2, n.y - size / 2, size, size);
       }
       ctx.globalAlpha = 1;
