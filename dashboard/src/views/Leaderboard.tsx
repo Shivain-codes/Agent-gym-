@@ -9,6 +9,7 @@ import {
 } from "../api";
 import { accentFor, fmt, pct } from "../lib/ui";
 import { BlackBoxPanel } from "../components/ui/BlackBoxPanel";
+import { LeaderboardBars, type LeaderboardModel } from "../components/ui/leaderboard-bars";
 import { cn } from "../lib/utils";
 
 const blackBoxSpring = {
@@ -79,9 +80,8 @@ export default function Leaderboard() {
         </p>
       </div>
 
-      <ModelCards rows={rows} />
+      <RankingTable rows={rows} matrix={matrix} />
       <Insight rows={rows} />
-      <Charts rows={rows} />
       <Matrix matrix={matrix} />
       <RecentEpisodes episodes={episodes} />
     </motion.section>
@@ -164,162 +164,60 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
   );
 }
 
-function ModelCards({ rows }: { rows: LeaderboardRow[] }) {
+function RankingTable({ rows, matrix }: { rows: LeaderboardRow[]; matrix: MatrixCell[] }) {
+  const versions = useMemo(() => {
+    const models: LeaderboardModel[] = rows.map((r) => ({
+      id: r.model,
+      color: accentFor(r.model),
+      badge: r.model[0]?.toUpperCase(),
+      runs: [
+        // Aggregate row first — "Best" mode shows exactly this row per model.
+        {
+          score: (r.avg_judge_score ?? 0) * 10,
+          x: { steps: r.avg_steps, episodes: r.episodes, pass: r.pass_rate * 100 },
+        },
+        // "Per task" mode expands every model x task cell (real matrix data).
+        ...matrix
+          .filter((c) => c.model === r.model)
+          .map((c) => ({
+            variant: c.task_id,
+            score: (c.avg_judge_score ?? 0) * 10,
+            x: { steps: c.avg_steps, episodes: c.episodes, pass: c.pass_rate * 100 },
+          })),
+      ],
+    }));
+    return [{ key: "current", label: "current", models }];
+  }, [rows, matrix]);
+
+  const totalEpisodes = rows.reduce((a, r) => a + r.episodes, 0);
+
   return (
-    <div className="grid gap-6 sm:grid-cols-3">
-      {rows.map((r, i) => (
-        <motion.div
-          key={r.model}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...blackBoxSpring, delay: i * 0.1 }}
-          whileHover={{ y: -5 }}
-        >
-          <BlackBoxPanel
-            title={`MODEL_${r.model.toUpperCase()}`}
-            technical
-            className="relative overflow-hidden h-full"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-xl font-display font-semibold capitalize text-[var(--color-ink)]">{r.model}</span>
-              {i === 0 && (
-                <span className="rounded-sm bg-[var(--color-amber)]/15 px-2 py-0.5 text-[10px] font-mono font-bold text-[var(--color-amber)] uppercase">
-                  leader
-                </span>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-y-4 text-sm">
-              <Stat label="Pass rate" value={pct(r.pass_rate)} big />
-              <Stat label="Judge" value={`${fmt(r.avg_judge_score)} / 10`} big />
-              <Stat label="Avg steps" value={fmt(r.avg_steps)} />
-              <Stat label="Episodes" value={String(r.episodes)} />
-            </div>
-          </BlackBoxPanel>
-        </motion.div>
-      ))}
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ ...blackBoxSpring, delay: 0.1 }}
+      className="mx-auto max-w-5xl"
+    >
+      <LeaderboardBars
+        versions={versions}
+        columns={[
+          { key: "steps", label: "steps", decimals: 1 },
+          { key: "episodes", label: "episodes", decimals: 0 },
+          { key: "pass", label: "pass", suffix: "%", decimals: 0 },
+        ]}
+        meta={`${rows.length} models · ${totalEpisodes} episodes`}
+        footnote="Judge scores are 0–10 from the automated code judge, shown here \u00d710. Steps count agent actions per task — fewer is faster."
+        scoreLabel="judge"
+        scoreSuffix="%"
+        modelColLabel="model"
+        bestLabel="Best"
+        allRunsLabel="Per task"
+        modelsLabel="Models"
+      />
+    </motion.div>
   );
 }
 
-function Stat({
-  label,
-  value,
-  big,
-}: {
-  label: string;
-  value: string;
-  big?: boolean;
-}) {
-  return (
-    <div className="flex flex-col">
-      <div className="text-[10px] uppercase tracking-widest text-[var(--color-body)] font-mono">
-        {label}
-      </div>
-      <div className={cn(
-        "font-display",
-        big ? "text-2xl font-bold text-[var(--color-ink)]" : "text-base font-mono text-[var(--color-body)]"
-      )}>
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function Charts({ rows }: { rows: LeaderboardRow[] }) {
-  const maxSteps = Math.max(1, ...rows.map((r) => r.avg_steps));
-  const minSteps = Math.min(...rows.map((r) => r.avg_steps), maxSteps);
-  return (
-    <div className="grid gap-6 md:grid-cols-3">
-      <BarPanel title="Pass rate">
-        {rows.map((r) => (
-          <Bar
-            key={r.model}
-            label={r.model}
-            value={r.pass_rate}
-            display={pct(r.pass_rate)}
-            frac={r.pass_rate}
-            color={accentFor(r.model)}
-          />
-        ))}
-      </BarPanel>
-      <BarPanel title="Judge score (/10)">
-        {rows.map((r) => (
-          <Bar
-            key={r.model}
-            value={r.avg_judge_score ?? 0}
-            display={fmt(r.avg_judge_score)}
-            frac={(r.avg_judge_score ?? 0) / 10}
-            color={accentFor(r.model)}
-            label={r.model}
-          />
-        ))}
-      </BarPanel>
-      <BarPanel title="Avg steps (lower = faster)">
-        {rows.map((r) => (
-          <Bar
-            key={r.model}
-            value={r.avg_steps}
-            display={fmt(r.avg_steps)}
-            frac={r.avg_steps > 0 ? minSteps / r.avg_steps : 0}
-            color={accentFor(r.model)}
-            label={r.model}
-          />
-        ))}
-      </BarPanel>
-    </div>
-  );
-}
-
-function BarPanel({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <BlackBoxPanel title={title.toUpperCase()} technical>
-      <div className="mt-4 space-y-4">{children}</div>
-    </BlackBoxPanel>
-  );
-}
-
-function Bar({
-  label,
-  display,
-  frac,
-  color,
-}: {
-  label: string;
-  value: number;
-  display: string;
-  frac: number;
-  color: string;
-}) {
-  return (
-    <div className="group">
-      <div className="flex items-center justify-between text-xs mb-1">
-        <span className="capitalize text-[var(--color-body)] font-mono group-hover:text-[var(--color-ink)] transition-colors">{label}</span>
-        <span className="font-mono text-[var(--color-ink)]">{display}</span>
-      </div>
-      <div className="h-1.5 overflow-hidden bg-[var(--color-border)]">
-        <div className="flex h-full w-full gap-0.5">
-          {/* Segmented Bar Implementation */}
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-full flex-1 rounded-none"
-              style={{
-                backgroundColor: (i / 20) < frac ? color : 'transparent',
-                opacity: (i / 20) < frac ? 1 : 0.2
-              }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function Matrix({ matrix }: { matrix: MatrixCell[] }) {
   const models = useMemo(
