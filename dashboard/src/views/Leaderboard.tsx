@@ -206,7 +206,7 @@ function RankingTable({ rows, matrix }: { rows: LeaderboardRow[]; matrix: Matrix
           { key: "pass", label: "pass", suffix: "%", decimals: 0 },
         ]}
         meta={`${rows.length} models · ${totalEpisodes} episodes`}
-        footnote="Judge scores are 0–10 from the automated code judge, shown here \u00d710. Steps count agent actions per task — fewer is faster."
+        footnote="Judge scores are 0–10 from the automated code judge, shown here ×10. Steps count agent actions per task — fewer is faster."
         scoreLabel="judge"
         scoreSuffix="%"
         modelColLabel="model"
