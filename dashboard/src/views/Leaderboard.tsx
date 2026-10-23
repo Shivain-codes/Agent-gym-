@@ -10,6 +10,7 @@ import {
 import { accentFor, fmt, pct } from "../lib/ui";
 import { BlackBoxPanel } from "../components/ui/BlackBoxPanel";
 import { LeaderboardBars, type LeaderboardModel } from "../components/ui/leaderboard-bars";
+import { EditorialList } from "../components/ui/editorial-list";
 import { cn } from "../lib/utils";
 
 const blackBoxSpring = {
@@ -302,35 +303,60 @@ function RecentEpisodes({ episodes }: { episodes: EpisodeSummary[] }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={blackBoxSpring}
+      className="mx-auto max-w-5xl"
     >
-      <BlackBoxPanel title="Recent episodes">
-        <div className="mt-4 divide-y divide-[var(--color-border)]">
-          {completed.map((e) => (
-            <Link
-              key={e.episode_id}
-              to={`/replay/${e.episode_id}`}
-              className="flex items-center gap-3 py-3 text-sm hover:bg-[var(--color-border)]/30 transition-colors group"
-            >
-              <span
-                className={`h-2 w-2 shrink-0 rounded-full ${
-                e.passed ? "bg-[var(--color-pass)]" : "bg-[var(--color-fail)]"
-                }`}
-              />
-              <span className="font-mono text-[var(--color-ink)] group-hover:text-[var(--color-amber)] transition-colors">{e.task_id}</span>
-              <span className="capitalize text-[var(--color-body)]">{e.model}</span>
+      <div className="mb-8 flex items-baseline justify-between">
+        <h2 className="font-display text-2xl font-semibold tracking-tighter text-[var(--color-ink)]">
+          Recent episodes
+        </h2>
+        <Link
+          to="/replay"
+          className="font-mono text-xs text-[var(--color-body)] underline underline-offset-4 decoration-[var(--color-border)] transition-colors hover:text-[var(--color-ink)] hover:decoration-[var(--color-amber)]"
+        >
+          View all
+        </Link>
+      </div>
+      <EditorialList
+        items={completed.map((e, i) => ({
+          id: e.episode_id,
+          index: String(i + 1).padStart(2, '0'),
+          title: (
+            <span className="flex flex-wrap items-center gap-3">
+              <span className="font-mono text-[var(--color-ink)]">{e.task_id}</span>
               {e.is_fixture && (
                 <span className="rounded-sm bg-[var(--color-amber)]/15 px-2 py-0.5 text-[10px] font-mono text-[var(--color-amber)]">
                   golden
                 </span>
               )}
-              <span className="ml-auto font-mono text-[10px] text-[var(--color-body)]">
-                {e.num_steps} steps · judge {e.judge_score ?? "–"} · reward{" "}
-                {e.final_reward.toFixed(2)}
-              </span>
+            </span>
+          ),
+          descriptor: (
+            <span className={cn(
+              "font-mono text-xs",
+              e.passed ? "text-[var(--color-pass)]" : "text-[var(--color-fail)]"
+            )}>
+              {e.passed ? "solved" : "not solved"}
+            </span>
+          ),
+          meta: (
+            <>
+              <span className="capitalize">{e.model}</span>
+              <span className="text-[var(--color-border)]">{' · '}</span>
+              <span>{e.num_steps} steps</span>
+              <span className="text-[var(--color-border)]">{' · '}</span>
+              <span>judge {e.judge_score ?? '—'}</span>
+            </>
+          ),
+          detail: (
+            <Link
+              to={`/replay/${e.episode_id}`}
+              className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--color-ink)] transition-colors hover:text-[var(--color-amber)]"
+            >
+              Open replay <span aria-hidden>→</span>
             </Link>
-          ))}
-        </div>
-      </BlackBoxPanel>
+          ),
+        }))}
+      />
     </motion.div>
   );
 }
