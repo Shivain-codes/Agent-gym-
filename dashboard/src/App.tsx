@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Leaderboard from "./views/Leaderboard";
 import EpisodeReplay from "./views/EpisodeReplay";
 import Tasks from "./views/Tasks";
@@ -9,15 +9,11 @@ import { ParticleField } from "./components/effects/ParticleField";
 import BattleView from "./views/battle/BattleView";
 
 export default function App() {
-  const location = useLocation();
-  // Landing has its own inline hero nav; every other page gets the shared sticky nav.
-  const showNav = location.pathname !== "/";
-
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-ink)] antialiased">
       <ParticleField />
       <div className="relative z-10">
-        {showNav && <Nav />}
+        <Nav />
         <main>
           <Routes>
             <Route path="/" element={<Landing />} />

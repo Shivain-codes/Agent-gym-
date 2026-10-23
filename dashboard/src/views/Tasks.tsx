@@ -70,8 +70,8 @@ export default function Tasks() {
     >
       <div className="flex flex-wrap items-end justify-between gap-6 mb-12">
         <div className="max-w-2xl">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
-            SYS_LOG // SCORING_SET
+          <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-[var(--color-micro)]">
+            The scoring set
           </p>
           <h1 className="mt-3 text-5xl font-display font-semibold tracking-tighter text-[var(--color-ink)]">Tasks</h1>
           <p className="mt-3 text-base leading-relaxed text-[var(--color-body)]">
@@ -114,23 +114,19 @@ export default function Tasks() {
                 className="cursor-pointer group"
               >
                 <BlackBoxPanel
-                  title={`TASK_${t.id.toUpperCase()}`}
-                  technical
-                  className="transition-all group-hover:border-[var(--color-amber)]"
+                  title={t.id}
+                  className="transition-colors group-hover:border-[var(--color-micro)]"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs text-[var(--color-body)]">{t.id}</span>
-                        <span
-                          className={cn(
-                            "rounded-sm px-2 py-0.5 text-[10px] font-mono font-medium border border-[var(--color-border)] bg-[var(--color-bg)]",
-                            difficultyClass(t.difficulty)
-                          )}
-                        >
-                          {t.difficulty}
-                        </span>
-                      </div>
+                      <span
+                        className={cn(
+                          "rounded-sm px-2 py-0.5 text-[10px] font-mono font-medium border border-[var(--color-border)] bg-[var(--color-bg)]",
+                          difficultyClass(t.difficulty)
+                        )}
+                      >
+                        {t.difficulty}
+                      </span>
                       <h3 className="font-display text-lg font-semibold text-[var(--color-ink)]">{t.name}</h3>
                     </div>
 

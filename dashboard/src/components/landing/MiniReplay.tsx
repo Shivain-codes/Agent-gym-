@@ -23,7 +23,7 @@ export const MiniReplay: React.FC = () => {
   const progress = ((step + 1) / TRAJECTORY_DATA.length) * 100;
 
   return (
-    <BlackBoxPanel title="LIVE_REPLAY" technical>
+    <BlackBoxPanel title="Live replay">
       <div className="space-y-4 font-mono">
         {/* Progress Bar */}
         <div className="space-y-1">

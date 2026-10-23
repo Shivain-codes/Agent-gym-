@@ -41,8 +41,8 @@ function EpisodePicker() {
       className="px-6 py-12"
     >
       <div className="mb-12">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
-          SYS_LOG // TRAJECTORY_ARCHIVE
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-[var(--color-micro)]">
+          Trajectory archive
         </p>
         <h1 className="mt-3 text-5xl font-display font-semibold tracking-tighter text-[var(--color-ink)]">Episode Replay</h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--color-body)]">
@@ -273,7 +273,7 @@ function Header({ ep }: { ep: EpisodeOut }) {
         <span className="text-[var(--color-hairline)]">|</span>
         <span className="group">
           Ultra judge{" "}
-          <span className="text-violet-300">{ep.judge_score ?? "–"}/10</span>
+          <span className="text-[var(--color-amber)]">{ep.judge_score ?? "–"}/10</span>
         </span>
       </div>
     </div>
@@ -316,15 +316,15 @@ function Timeline({
 function dotColor(type: string): string {
   switch (type) {
     case "edit_file":
-      return "bg-emerald-400";
+      return "bg-[var(--color-amber)]";
     case "run_tests":
-      return "bg-amber-400";
+      return "bg-[var(--color-pass)]";
     case "run_command":
-      return "bg-sky-400";
+      return "bg-[var(--color-body)]";
     case "give_up":
-      return "bg-rose-400";
+      return "bg-[var(--color-fail)]";
     default:
-      return "bg-slate-500";
+      return "bg-[var(--color-micro)]";
   }
 }
 

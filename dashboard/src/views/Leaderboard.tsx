@@ -70,8 +70,8 @@ export default function Leaderboard() {
       className="space-y-12 px-6 py-12"
     >
       <div className="max-w-5xl mx-auto">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
-          SYS_LOG // MODEL_RANKINGS
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-[var(--color-micro)]">
+          Model rankings
         </p>
         <h1 className="mt-3 text-5xl font-display font-semibold tracking-tighter text-[var(--color-ink)]">Leaderboard</h1>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--color-body)]">
@@ -101,11 +101,7 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
         transition={{ ...blackBoxSpring, delay: 0.15 }}
         className="mx-auto max-w-5xl"
       >
-        <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-8 md:p-10">
-          <div
-            className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full opacity-20"
-            style={{ background: "radial-gradient(circle, #76B900, transparent 70%)" }}
-          />
+        <div className="relative border border-[var(--color-border)] border-l-2 border-l-[var(--color-amber)] bg-[var(--color-panel)] p-8 md:p-10">
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
             The takeaway
           </p>
@@ -142,11 +138,7 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
       transition={{ ...blackBoxSpring, delay: 0.15 }}
       className="mx-auto max-w-5xl"
     >
-      <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-8 md:p-10">
-        <div
-          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full opacity-20"
-          style={{ background: "radial-gradient(circle, #76B900, transparent 70%)" }}
-        />
+      <div className="relative border border-[var(--color-border)] border-l-2 border-l-[var(--color-amber)] bg-[var(--color-panel)] p-8 md:p-10">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
           The takeaway
         </p>
@@ -243,7 +235,7 @@ function Matrix({ matrix }: { matrix: MatrixCell[] }) {
       viewport={{ once: true }}
       transition={blackBoxSpring}
     >
-      <BlackBoxPanel title="MODELS x TASKS" technical>
+      <BlackBoxPanel title="Models × tasks">
         <div className="mt-4 overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead className="bg-[var(--color-panel)]">
@@ -311,7 +303,7 @@ function RecentEpisodes({ episodes }: { episodes: EpisodeSummary[] }) {
       viewport={{ once: true }}
       transition={blackBoxSpring}
     >
-      <BlackBoxPanel title="RECENT_EPISODES" technical>
+      <BlackBoxPanel title="Recent episodes">
         <div className="mt-4 divide-y divide-[var(--color-border)]">
           {completed.map((e) => (
             <Link

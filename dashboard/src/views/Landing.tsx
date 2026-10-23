@@ -5,7 +5,7 @@ import { Hero } from '../components/landing/Hero';
 import { MiniReplay } from '../components/landing/MiniReplay';
 import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { Bug, Terminal, History, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { EditorialList } from '../components/ui/editorial-list';
 import { Stats, type StatItem } from '../components/ui/stats-section-with-text';
 
@@ -148,9 +148,9 @@ const FreshFromGym: React.FC = () => {
 
 const HowItWorks: React.FC = () => {
   const steps = [
-    { icon: Bug, title: 'Feed it broken code.', desc: 'A repository with an intentional bug goes into the gym environment. Nothing mocked, nothing staged.' },
-    { icon: Terminal, title: 'The agent works the sandbox.', desc: 'It reads, edits, and runs tests inside an isolated container, one step at a time.' },
-    { icon: History, title: 'Every step is kept.', desc: 'Thoughts, actions, and verdicts are recorded as a replayable trajectory.' },
+    { n: '01', title: 'Feed it broken code.', desc: 'A repository with an intentional bug goes into the gym environment. Nothing mocked, nothing staged.' },
+    { n: '02', title: 'The agent works the sandbox.', desc: 'It reads, edits, and runs tests inside an isolated container, one step at a time.' },
+    { n: '03', title: 'Every step is kept.', desc: 'Thoughts, actions, and verdicts are recorded as a replayable trajectory.' },
   ];
 
   return (
@@ -160,15 +160,15 @@ const HowItWorks: React.FC = () => {
         <p className="mt-4 max-w-md text-base leading-relaxed text-[var(--color-body)]">
           Broken code goes in. A scored, replayable trajectory comes out.
         </p>
-        <div className="mt-12 grid md:grid-cols-3 border-t border-l border-[var(--color-border)]">
+        <div className="mt-12 border-t border-[var(--color-border)]">
           {steps.map((step) => (
             <div
-              key={step.title}
-              className="border-b border-r border-[var(--color-border)] p-8 transition-colors duration-200 hover:bg-white/[0.015]"
+              key={step.n}
+              className="grid grid-cols-[auto_1fr] md:grid-cols-[80px_1fr_1fr] gap-6 items-baseline border-b border-[var(--color-border)] py-8"
             >
-              <step.icon size={20} strokeWidth={1.75} className="text-[var(--color-amber)]" />
-              <h3 className="mt-6 font-display text-xl font-semibold tracking-tight text-[var(--color-ink)]">{step.title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-[var(--color-body)]">{step.desc}</p>
+              <span className="font-mono text-sm text-[var(--color-amber)]">{step.n}</span>
+              <h3 className="font-display text-xl font-semibold tracking-tight text-[var(--color-ink)]">{step.title}</h3>
+              <p className="col-span-2 md:col-span-1 text-sm leading-relaxed text-[var(--color-body)]">{step.desc}</p>
             </div>
           ))}
         </div>
@@ -442,14 +442,14 @@ const DatasetSection: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
-                SYS_LOG // DATASHEET
+              <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-[var(--color-micro)]">
+                Datasheet
               </p>
               <button
                 onClick={() => setSheetOpen(false)}
-                className="font-mono text-xs text-[var(--color-micro)] hover:text-[var(--color-ink)]"
+                className="font-mono text-xs text-[var(--color-micro)] transition-colors hover:text-[var(--color-ink)]"
               >
-                CLOSE ✕
+                Close
               </button>
             </div>
             {sheetError ? (

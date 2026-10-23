@@ -58,8 +58,8 @@ export default function BattleView() {
       className="px-6 py-12"
     >
       <div className="mb-12 max-w-5xl">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-amber)]">
-          SYS_LOG // MODEL_BATTLE
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-[var(--color-micro)]">
+          Head to head
         </p>
         <h1 className="mt-3 text-5xl font-display font-semibold tracking-tighter text-[var(--color-ink)]">
           Model Battle
@@ -486,12 +486,8 @@ function BattleResult({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...blackBoxSpring, delay: 0.1 }}
-        className="relative mb-12 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-8"
+        className="relative mb-12 border border-[var(--color-border)] border-l-2 border-l-[var(--color-amber)] bg-[var(--color-panel)] p-8"
       >
-        <div
-          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full opacity-20"
-          style={{ background: "radial-gradient(circle, #76B900, transparent 70%)" }}
-        />
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
           The verdict
         </p>
@@ -516,7 +512,7 @@ function BattleResult({
           animate={{ opacity: 1, x: 0 }}
           transition={{ ...blackBoxSpring, delay: 0.2 }}
         >
-          <BattleColumn model={modelA} ep={epA} color="var(--color-sky-400)" />
+          <BattleColumn model={modelA} ep={epA} color="var(--color-ink)" />
         </motion.div>
         <motion.div
           initial={{ opacity: 0, x: 20 }}
