@@ -11,6 +11,7 @@ import { accentFor, fmt, pct } from "../lib/ui";
 import { BlackBoxPanel } from "../components/ui/BlackBoxPanel";
 import { LeaderboardBars, type LeaderboardModel } from "../components/ui/leaderboard-bars";
 import { EditorialList } from "../components/ui/editorial-list";
+import { CardSpotlight } from "../components/ui/card-spotlight";
 import { cn } from "../lib/utils";
 
 const blackBoxSpring = {
@@ -102,7 +103,8 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
         transition={{ ...blackBoxSpring, delay: 0.15 }}
         className="mx-auto max-w-5xl"
       >
-        <div className="relative border border-[var(--color-border)] border-l-2 border-l-[var(--color-amber)] bg-[var(--color-panel)] p-8 md:p-10">
+        <CardSpotlight className="border border-[var(--color-border)] border-l-2 border-l-[var(--color-amber)] bg-[var(--color-panel)]">
+          <div className="p-8 md:p-10">
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
             The takeaway
           </p>
@@ -115,7 +117,8 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
             {r.episodes} episodes. The gym's headline — speed vs quality — appears
             once two models share the board.
           </p>
-        </div>
+          </div>
+        </CardSpotlight>
       </motion.div>
     );
   }
@@ -139,7 +142,8 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
       transition={{ ...blackBoxSpring, delay: 0.15 }}
       className="mx-auto max-w-5xl"
     >
-      <div className="relative border border-[var(--color-border)] border-l-2 border-l-[var(--color-amber)] bg-[var(--color-panel)] p-8 md:p-10">
+      <CardSpotlight className="border border-[var(--color-border)] border-l-2 border-l-[var(--color-amber)] bg-[var(--color-panel)]">
+        <div className="p-8 md:p-10">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-amber)]">
           The takeaway
         </p>
@@ -152,7 +156,8 @@ function Insight({ rows }: { rows: LeaderboardRow[] }) {
           but {cap(insight.bestJudge.model)} scores {fmt(insight.bestJudge.avg_judge_score)}/10
           on code quality. Speed and quality don't move together.
         </p>
-      </div>
+        </div>
+      </CardSpotlight>
     </motion.div>
   );
 }
